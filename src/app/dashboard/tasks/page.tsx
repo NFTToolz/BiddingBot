@@ -20,6 +20,7 @@ import { useRouter } from "next/navigation";
 import DeleteModal from "@/components/tasks/DeleteTaskModal";
 import { toast } from "react-toastify";
 import { LoopStat } from "@/app/api/progress/route";
+import RetryIcon from "@/assets/svg/RetryIcon";
 
 const NEXT_PUBLIC_SERVER_WEBSOCKET = process.env
   .NEXT_PUBLIC_SERVER_WEBSOCKET as string;
@@ -55,7 +56,9 @@ const Tasks = () => {
   const [bidStats, setBidStats] = useState<BidStats>({});
   const [loopStat, setLoopStats] = useState<LoopStat>({});
 
-  const { sendMessage } = useWebSocket(NEXT_PUBLIC_SERVER_WEBSOCKET);
+  const { sendMessage, isConnected, retryConnection } = useWebSocket(
+    NEXT_PUBLIC_SERVER_WEBSOCKET
+  );
   const router = useRouter();
 
   const getBidStats = useCallback(async () => {
@@ -567,6 +570,15 @@ const Tasks = () => {
 
   return (
     <section className="ml-0 sm:ml-20 p-4 sm:p-6 pb-24">
+      <p className="absolute top-28 right-12 flex items-center gap-4">
+        <RetryIcon retryConnection={retryConnection} />
+        <p>server status</p>
+        {isConnected ? (
+          <div className="w-4 h-4 rounded-full bg-green-500"></div>
+        ) : (
+          <div className="w-4 h-4 rounded-full bg-red-500"></div>
+        )}
+      </p>
       <div className="flex flex-col items-center justify-between mb-4 sm:mb-8 pb-4 sm:flex-row">
         <h1 className="text-xl font-bold mb-4 sm:mb-0 sm:text-2xl md:text-[28px]">
           Manage Tasks

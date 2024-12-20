@@ -3,8 +3,6 @@ import { NextRequest, NextResponse } from "next/server";
 
 const API_KEY = process.env.API_KEY as string;
 
-console.log({ API_KEY });
-
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;

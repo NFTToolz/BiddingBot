@@ -3,8 +3,6 @@ import { useEffect, useRef, useCallback, useState } from "react";
 export const useWebSocket = (url: string) => {
   const ws = useRef<WebSocket | null>(null);
   const [isConnected, setIsConnected] = useState(false);
-  const reconnectAttemptsRef = useRef(0);
-  const maxReconnectAttempts = 5;
 
   const connect = useCallback(() => {
     console.log("Connecting to WebSocket:", url);
@@ -13,7 +11,6 @@ export const useWebSocket = (url: string) => {
     ws.current.onopen = () => {
       console.log("WebSocket connected successfully");
       setIsConnected(true);
-      reconnectAttemptsRef.current = 0;
     };
 
     ws.current.onerror = (error) => {
@@ -22,18 +19,17 @@ export const useWebSocket = (url: string) => {
 
     ws.current.onclose = () => {
       setIsConnected(false);
-
-      if (reconnectAttemptsRef.current < maxReconnectAttempts) {
-        const timeout = Math.pow(2, reconnectAttemptsRef.current) * 1000;
-        setTimeout(connect, timeout);
-        reconnectAttemptsRef.current++;
-      } else {
-        console.error(
-          "Max reconnection attempts reached. Please refresh the page."
-        );
-      }
+      setTimeout(connect, 3000);
     };
   }, [url]);
+
+  const retryConnection = useCallback(() => {
+    if (ws.current && ws.current.readyState === WebSocket.CLOSED) {
+      connect();
+    } else {
+      console.log("WebSocket is already connected or connecting");
+    }
+  }, [connect]);
 
   useEffect(() => {
     connect();
@@ -53,5 +49,5 @@ export const useWebSocket = (url: string) => {
     }
   }, []);
 
-  return { sendMessage };
+  return { sendMessage, isConnected, retryConnection };
 };
