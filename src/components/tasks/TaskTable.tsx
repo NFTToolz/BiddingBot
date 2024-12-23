@@ -9,13 +9,13 @@ import { Task } from "@/store/task.store";
 import Toggle from "@/components/common/Toggle";
 import EditIcon from "@/assets/svg/EditIcon";
 import { Tag } from "@/store/tag.store";
-import { useWebSocket } from "@/hooks/useWebSocket";
 import Link from "next/link";
 import DeleteIcon from "@/assets/svg/DeleteIcon";
 import { useTaskStore } from "@/store/task.store";
 import { toast } from "react-toastify";
 import DeleteModal from "./DeleteTaskModal";
-import { BidStats, MergedTask } from "@/app/dashboard/tasks/page";
+import { MergedTask } from "@/app/dashboard/tasks/page";
+import { BidStats } from "@/app/context/WebSocketContext";
 
 const GENERAL_BID_PRICE = "GENERAL_BID_PRICE";
 const MARKETPLACE_BID_PRICE = "MARKETPLACE_BID_PRICE";
@@ -35,7 +35,6 @@ interface TaskTableProps {
   isVerificationMode?: boolean;
   mergedTasks?: MergedTask[];
   bidStats?: BidStats;
-  getBidStats?: () => Promise<void>;
   totalBids?: {
     opensea: number;
     blur: number;
@@ -46,7 +45,7 @@ interface TaskTableProps {
     blur: number;
     magiceden: number;
   }>;
-  bidDifference?: number;
+  sendMessage: (message: any) => void;
 }
 
 const TaskTable: React.FC<TaskTableProps> = ({
@@ -60,14 +59,10 @@ const TaskTable: React.FC<TaskTableProps> = ({
   isVerificationMode = false,
   mergedTasks,
   totalBids,
-  bidDifference,
   tasks,
+  sendMessage,
+  bidStats,
 }) => {
-  const NEXT_PUBLIC_SERVER_WEBSOCKET = process.env
-    .NEXT_PUBLIC_SERVER_WEBSOCKET as string;
-
-  const { sendMessage } = useWebSocket(NEXT_PUBLIC_SERVER_WEBSOCKET);
-
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [taskToDelete, setTaskToDelete] = useState<Task | null>(null);
 
@@ -122,9 +117,11 @@ const TaskTable: React.FC<TaskTableProps> = ({
     return "bidStats" in task;
   };
 
-  const isLoopStat = (task: Task | MergedTask): task is MergedTask => {
-    return "loopStat" in task;
-  };
+  const totalBidsPerSecond = !bidStats?.bidRates
+    ? 0
+    : bidStats.bidRates.opensea.bidsPerSecond +
+      bidStats.bidRates.blur.bidsPerSecond +
+      bidStats.bidRates.magiceden.bidsPerSecond;
 
   return (
     <>
@@ -155,7 +152,7 @@ const TaskTable: React.FC<TaskTableProps> = ({
 
           <div className="flex gap-4">
             <p>Bid Per Second:</p>
-            <p>{Math.ceil((bidDifference || 0) / 5)} / s</p>
+            <p>{Math.ceil(totalBidsPerSecond)} / s</p>
           </div>
         </div>
       )}
@@ -205,13 +202,6 @@ const TaskTable: React.FC<TaskTableProps> = ({
                   <>
                     <th scope="col" className="px-6 py-3 text-center w-[150px]">
                       Progress
-                    </th>
-
-                    <th scope="col" className="px-6 py-3 text-center w-[150px]">
-                      Loop Count
-                    </th>
-                    <th scope="col" className="px-6 py-3 text-center w-[150px]">
-                      Next Loop Countdown
                     </th>
                   </>
                 )}
@@ -360,8 +350,11 @@ const TaskTable: React.FC<TaskTableProps> = ({
                                         {isMergedTask(task) ? (
                                           <div>
                                             {
-                                              task.bidStats[
-                                                marketplace as keyof typeof task.bidStats
+                                              task.bidStats.bidCounts[task._id][
+                                                marketplace as
+                                                  | "opensea"
+                                                  | "blur"
+                                                  | "magiceden"
                                               ]
                                             }{" "}
                                             / {total}
@@ -397,13 +390,6 @@ const TaskTable: React.FC<TaskTableProps> = ({
                                               : ""
                                           }`}
                                         ></div>
-                                        {isLoopStat(task) ? (
-                                          <div>
-                                            {task.loopStat[
-                                              marketplace as keyof typeof task.loopStat
-                                            ].count || "--"}
-                                          </div>
-                                        ) : null}
                                       </div>
                                     );
                                   })
@@ -434,25 +420,6 @@ const TaskTable: React.FC<TaskTableProps> = ({
                                               : ""
                                           }`}
                                         ></div>
-                                        {isLoopStat(task) ? (
-                                          <div>
-                                            {Math.ceil(
-                                              (task.loopStat[
-                                                marketplace as keyof typeof task.loopStat
-                                              ].nextLoop -
-                                                Date.now()) /
-                                                1000
-                                            ) > 0
-                                              ? Math.ceil(
-                                                  (task.loopStat[
-                                                    marketplace as keyof typeof task.loopStat
-                                                  ].nextLoop -
-                                                    Date.now()) /
-                                                    1000
-                                                )
-                                              : "--"}
-                                          </div>
-                                        ) : null}
                                       </div>
                                     );
                                   })
@@ -751,3 +718,9 @@ const TaskTable: React.FC<TaskTableProps> = ({
 };
 
 export default TaskTable;
+
+interface MarketplaceBids {
+  opensea: number;
+  magiceden: number;
+  blur: number;
+}

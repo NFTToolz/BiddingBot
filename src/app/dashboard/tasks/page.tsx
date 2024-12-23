@@ -10,7 +10,7 @@ import RecentBids from "@/components/tasks/RecentBids";
 import { BidInfo, WebSocketResponse } from "@/interface";
 import TagFilter from "@/components/tasks/TagFilter";
 import { Tag } from "@/store/tag.store";
-import { useWebSocket } from "@/hooks/useWebSocket";
+import { BidStats, useWebSocket } from "@/app/context/WebSocketContext";
 import BidTypeFilter, { BidType } from "@/components/tasks/BidTypeFilter";
 import FilterInput from "@/components/tasks/FilterInput";
 import DownloadIcon from "@/assets/svg/DownloadIcon";
@@ -19,11 +19,7 @@ import Papa from "papaparse";
 import { useRouter } from "next/navigation";
 import DeleteModal from "@/components/tasks/DeleteTaskModal";
 import { toast } from "react-toastify";
-import { LoopStat } from "@/app/api/progress/route";
 import RetryIcon from "@/assets/svg/RetryIcon";
-
-const NEXT_PUBLIC_SERVER_WEBSOCKET = process.env
-  .NEXT_PUBLIC_SERVER_WEBSOCKET as string;
 
 const processJSONImport = (jsonData: any): Partial<Task>[] => {
   if (Array.isArray(jsonData)) {
@@ -53,39 +49,10 @@ const Tasks = () => {
   const [selectedBidTypes, setSelectedBidTypes] = useState<BidType[]>([]);
   const [showExportDropdown, setShowExportDropdown] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [bidStats, setBidStats] = useState<BidStats>({});
-  const [loopStat, setLoopStats] = useState<LoopStat>({});
 
-  const { sendMessage, isConnected, retryConnection } = useWebSocket(
-    NEXT_PUBLIC_SERVER_WEBSOCKET
-  );
+  const { sendMessage, isConnected, retryConnection, taskLockData, bidStats } =
+    useWebSocket();
   const router = useRouter();
-
-  const getBidStats = useCallback(async () => {
-    if (!tasks.length) return;
-    const runningTasks = tasks.map((task) => ({
-      slug: task.contract.slug,
-      selectedMarketplaces: task.selectedMarketplaces,
-      taskId: task._id,
-    }));
-
-    try {
-      const response = await fetch("/api/progress", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ tasks: runningTasks }),
-      });
-
-      if (!response.ok) throw new Error("Failed to fetch bid stats");
-      const data = await response.json();
-      const orderCounts: BidStats = data.orderCounts;
-      const loopStats: LoopStat = data.loopStat;
-      setBidStats(orderCounts);
-      setLoopStats(loopStats);
-    } catch (error) {
-      console.error("Error fetching bid stats:", error);
-    }
-  }, [tasks]);
 
   useEffect(() => {
     const fetchTasks = async () => {
@@ -130,76 +97,53 @@ const Tasks = () => {
     return filteredTasks.map(
       (task): MergedTask => ({
         ...task,
-        bidStats: (bidStats && bidStats[task._id]) || {
-          opensea: 0,
-          magiceden: 0,
-          blur: 0,
-        },
-        loopStat: {
-          opensea: (loopStat &&
-            loopStat[task._id] &&
-            loopStat[task._id]["opensea"]) || {
-            count: 0,
-            nextLoop: Date.now(),
+        bidStats: {
+          bidRates: {
+            opensea: {
+              bidsPerSecond: 0,
+              totalBids: 0,
+              windowPeriod: 0,
+            },
+            magiceden: {
+              bidsPerSecond: 0,
+              totalBids: 0,
+              windowPeriod: 0,
+            },
+            blur: {
+              bidsPerSecond: 0,
+              totalBids: 0,
+              windowPeriod: 0,
+            },
           },
-          magiceden: (loopStat &&
-            loopStat[task._id] &&
-            loopStat[task._id].magiceden) || {
-            count: 0,
-            nextLoop: Date.now(),
-          },
-          blur: (loopStat && loopStat[task._id] && loopStat[task._id].blur) || {
-            count: 0,
-            nextLoop: Date.now(),
+          bidCounts: {
+            [task._id]: (bidStats?.bidCounts &&
+              bidStats.bidCounts[task._id]) || {
+              opensea: 0,
+              magiceden: 0,
+              blur: 0,
+            },
           },
         },
       })
     );
-  }, [filteredTasks, bidStats, loopStat]);
-
-  const previousTotalBidsRef = useRef({
-    opensea: 0,
-    blur: 0,
-    magiceden: 0,
-  });
+  }, [filteredTasks, bidStats]);
 
   const totalBids = useMemo(() => {
     return {
-      opensea: Object.values(bidStats || {}).reduce(
+      opensea: Object.values(bidStats?.bidCounts || {}).reduce(
         (sum, stats) => sum + (stats.opensea || 0),
         0
       ),
-      blur: Object.values(bidStats || {}).reduce(
+      blur: Object.values(bidStats?.bidCounts || {}).reduce(
         (sum, stats) => sum + (stats.blur || 0),
         0
       ),
-      magiceden: Object.values(bidStats || {}).reduce(
+      magiceden: Object.values(bidStats?.bidCounts || {}).reduce(
         (sum, stats) => sum + (stats.magiceden || 0),
         0
       ),
     };
   }, [bidStats]);
-
-  useEffect(() => {
-    if (
-      JSON.stringify(previousTotalBidsRef.current) !== JSON.stringify(totalBids)
-    ) {
-      previousTotalBidsRef.current = { ...totalBids };
-    }
-  }, [totalBids]);
-
-  const bidDifference = useMemo(() => {
-    const currentTotal = Object.values(totalBids).reduce(
-      (sum, count) => sum + count,
-      0
-    );
-    const previousTotal = Object.values(previousTotalBidsRef.current).reduce(
-      (sum, count) => sum + count,
-      0
-    );
-    const difference = currentTotal - previousTotal;
-    return difference;
-  }, [totalBids]);
 
   const toggleTaskSelection = (taskId: string) => {
     setSelectedTasks((prev) => {
@@ -450,11 +394,6 @@ const Tasks = () => {
     window.URL.revokeObjectURL(url);
   };
 
-  useEffect(() => {
-    const intervalId = setInterval(getBidStats, 5000);
-    return () => clearInterval(intervalId);
-  }, [getBidStats]);
-
   const exportButton = (
     <div className="relative inline-block">
       <button
@@ -570,7 +509,7 @@ const Tasks = () => {
 
   return (
     <section className="ml-0 sm:ml-20 p-4 sm:p-6 pb-24">
-      <p className="absolute top-28 right-12 flex items-center gap-4">
+      <div className="absolute top-0 right-12 flex items-center gap-4">
         <RetryIcon retryConnection={retryConnection} />
         <p>server status</p>
         {isConnected ? (
@@ -578,7 +517,7 @@ const Tasks = () => {
         ) : (
           <div className="w-4 h-4 rounded-full bg-red-500"></div>
         )}
-      </p>
+      </div>
       <div className="flex flex-col items-center justify-between mb-4 sm:mb-8 pb-4 sm:flex-row">
         <h1 className="text-xl font-bold mb-4 sm:mb-0 sm:text-2xl md:text-[28px]">
           Manage Tasks
@@ -646,10 +585,9 @@ const Tasks = () => {
           selectedTags={selectedTags}
           selectedBidTypes={selectedBidTypes}
           mergedTasks={mergedTasks}
-          bidStats={bidStats}
-          getBidStats={getBidStats}
           totalBids={totalBids}
-          bidDifference={bidDifference}
+          sendMessage={sendMessage}
+          bidStats={bidStats as BidStats}
         />
       </Accordion>
       <RecentBids
@@ -885,31 +823,17 @@ const convertCSVToTasks = (csvContent: string): Task[] => {
 };
 
 export interface MergedTask extends Task {
-  bidStats: {
-    opensea: number;
-    magiceden: number;
-    blur: number;
-  };
-  loopStat: {
-    opensea: {
-      count: number;
-      nextLoop: number;
-    };
-    magiceden: {
-      count: number;
-      nextLoop: number;
-    };
-    blur: {
-      count: number;
-      nextLoop: number;
-    };
-  };
+  bidStats: BidStats;
 }
 
-export interface BidStats {
-  [key: string]: {
-    opensea: number;
-    magiceden: number;
-    blur: number;
-  };
+interface BidRates {
+  opensea: MarketplaceBidRate;
+  blur: MarketplaceBidRate;
+  magiceden: MarketplaceBidRate;
+}
+
+interface MarketplaceBidRate {
+  bidsPerSecond: number;
+  totalBids: number;
+  windowPeriod: number;
 }

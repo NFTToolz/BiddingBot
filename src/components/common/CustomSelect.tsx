@@ -1,6 +1,5 @@
 import ChevronDown from "@/assets/svg/ChevronDown";
-import { useState } from "react";
-import WalletBalanceFetcher from "./WalletBalanceFetcher";
+import { useState, useEffect } from "react";
 import { useWalletStore } from "@/store/wallet.store";
 import { toast } from "react-toastify";
 import DeleteIcon from "@/assets/svg/DeleteIcon";
@@ -32,8 +31,49 @@ const CustomSelect = ({
   showDeleteWallet = false,
 }: CustomSelectProps) => {
   const [isOpen, setIsOpen] = useState(false);
-  const selectedOption = options.find((opt) => opt.value === value);
+  const [enrichedOptions, setEnrichedOptions] = useState(options);
   const deleteWallet = useWalletStore((state) => state.deleteWallet);
+
+  useEffect(() => {
+    const fetchBalances = async (address: string) => {
+      try {
+        const response = await fetch(`/api/wallet/balance/${address}`, {
+          credentials: "include",
+        });
+        if (!response.ok) throw new Error("Failed to fetch balances");
+        const data = await response.json();
+
+        return {
+          etherBalance: `${Number(data.eth).toFixed(4)} ETH`,
+          wethBalance: `${Number(data.weth).toFixed(4)} WETH`,
+          blurBalance: `${Number(data.beth).toFixed(4)} BETH`,
+        };
+      } catch (error) {
+        console.error("Error fetching balances:", error);
+        return null;
+      }
+    };
+
+    const updateOptionsWithBalances = async () => {
+      const updatedOptions = await Promise.all(
+        options.map(async (option) => {
+          if (!option.address) return option;
+
+          const balances = await fetchBalances(option.address);
+          if (!balances) return option;
+
+          return {
+            ...option,
+            ...balances,
+          };
+        })
+      );
+
+      setEnrichedOptions(updatedOptions);
+    };
+
+    updateOptionsWithBalances();
+  }, [options]);
 
   const handleDeleteWallet = async (e: React.MouseEvent, walletId: string) => {
     e.stopPropagation();
@@ -62,12 +102,18 @@ const CustomSelect = ({
         className="w-full min-w-20 border rounded-lg shadow-sm p-3 border-Neutral-BG-[night] bg-Neutral/Neutral-300-[night] text-left flex justify-between items-center hover:bg-Neutral/Neutral-400-[night] transition-colors"
         onClick={() => setIsOpen(!isOpen)}
       >
-        {selectedOption ? <span>{selectedOption.label}</span> : placeholder}
+        {value ? (
+          <span>
+            {enrichedOptions.find((opt) => opt.value === value)?.label}
+          </span>
+        ) : (
+          placeholder
+        )}
         <ChevronDown />
       </button>
       {isOpen && (
         <ul className="absolute z-10 w-full mt-1 border rounded-lg shadow-lg border-Neutral-BG-[night] bg-Neutral/Neutral-300-[night]">
-          {options.map((option) => (
+          {enrichedOptions.map((option) => (
             <li
               key={option.value}
               className="p-4 cursor-pointer transition-colors hover:bg-Brand/Brand-1 flex justify-between items-center"

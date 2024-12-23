@@ -10,12 +10,16 @@ import BackIcon from "@/assets/svg/BackIcon";
 import DashboardHeader from "@/components/header/DashboardHeader";
 import { useWalletStore } from "@/store";
 import { useTagStore } from "@/store/tag.store";
+import DisconnectIcon from "@/assets/svg/DisconnectIcon";
+import { useWebSocket } from "../context/WebSocketContext";
 
 export default function RootLayout({ children }: any) {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileOrTablet, setIsMobileOrTablet] = useState(false);
   const { showSideBar, setShowSidebar } = useGlobal();
   const router = useRouter();
+
+  const { isConnected } = useWebSocket();
 
   const setWallets = useWalletStore((state) => state.setWallets);
   const setTags = useTagStore((state) => state.setTags);
@@ -74,22 +78,32 @@ export default function RootLayout({ children }: any) {
   }, [setTags]);
 
   return (
-    <main>
+    <main className="relative">
+      {!isConnected && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex flex-col items-center justify-center">
+          <DisconnectIcon size={240} color="#AEB9E1" />
+          <p className="mt-4 text-lg text-gray-600">
+            Connection lost. Reconnecting...
+          </p>
+        </div>
+      )}
       <Suspense>
-        <DashboardHeader />
-        <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
-        <div className="transition-all duration-300">
-          <button
-            onClick={() => {
-              setShowSidebar(true);
-              router.back();
-            }}
-            className="flex items-center gap-3 ml-28 mt-28"
-          >
-            <BackIcon fill="#AEB9E1" />
-            <h3>Back</h3>
-          </button>
-          {children}
+        <div className={!isConnected ? "pointer-events-none opacity-50" : ""}>
+          <DashboardHeader />
+          <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
+          <div className="transition-all duration-300">
+            <button
+              onClick={() => {
+                setShowSidebar(true);
+                router.back();
+              }}
+              className="flex items-center gap-3 ml-28 mt-28"
+            >
+              <BackIcon fill="#AEB9E1" />
+              <h3>Back</h3>
+            </button>
+            {children}
+          </div>
         </div>
       </Suspense>
     </main>

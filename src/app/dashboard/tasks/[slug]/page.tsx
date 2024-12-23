@@ -5,15 +5,13 @@ import MarketplaceFilter, {
   Marketplace,
 } from "@/components/tasks/MarketplaceFilter";
 import TaskModal from "@/components/tasks/TaskModal";
-import { useWebSocket } from "@/hooks/useWebSocket";
+import { useWebSocket } from "@/app/context/WebSocketContext";
 import { Task, useTaskStore } from "@/store";
 import { useCallback, useState } from "react";
 import useSWR from "swr";
 import { toast } from "react-toastify";
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
-const NEXT_PUBLIC_SERVER_WEBSOCKET = process.env
-  .NEXT_PUBLIC_SERVER_WEBSOCKET as string;
 
 function formatTimeRemaining(seconds: number): string {
   const minutes = Math.floor(seconds / 60);
@@ -43,7 +41,7 @@ export default function Page({ params }: { params: { slug: string } }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const { tasks, toggleTaskRunning } = useTaskStore();
-  const { sendMessage } = useWebSocket(NEXT_PUBLIC_SERVER_WEBSOCKET);
+  const { sendMessage } = useWebSocket();
 
   const {
     data,

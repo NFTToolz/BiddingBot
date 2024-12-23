@@ -4,7 +4,6 @@ import CustomSelect, { CustomSelectOption } from "../common/CustomSelect";
 import Toggle from "../common/Toggle";
 import TraitSelector from "./TraitSelector";
 import MarketplaceSection from "./MarketplaceSection";
-import WalletBalanceFetcher from "../common/WalletBalanceFetcher";
 import LoadingIcon from "@/assets/svg/LoadingIcon";
 
 interface FormSectionProps {
@@ -39,9 +38,6 @@ const FormSection: React.FC<FormSectionProps> = ({
 }) => {
   const GENERAL_BID_PRICE = "GENERAL_BID_PRICE";
   const MARKETPLACE_BID_PRICE = "MARKETPLACE_BID_PRICE";
-
-  const [updatedWalletOptions, setUpdatedWalletOptions] =
-    useState(walletOptions);
 
   const priceTypeOptions: CustomSelectOption[] = [
     { value: "percentage", label: "%" },
@@ -238,19 +234,23 @@ const FormSection: React.FC<FormSectionProps> = ({
 
   const minFloorPrice = Math.min(...floorPrices);
 
-  const handleBalancesFetched = useCallback(
-    (updatedOptions: CustomSelectOption[]) => {
-      setUpdatedWalletOptions(updatedOptions);
-    },
-    []
-  );
-
   return (
     <>
-      <WalletBalanceFetcher
-        walletOptions={walletOptions}
-        onBalancesFetched={handleBalancesFetched}
-      />
+      {/* <CustomSelect
+				showDeleteWallet={true}
+				options={walletOptions}
+				value={formState.wallet?.address || ""}
+				onChange={(selectedValue) =>
+					setFormState((prev) => ({
+						...prev,
+						wallet: {
+							...prev.wallet,
+							address: selectedValue,
+						},
+					}))
+				}
+				placeholder='Select a wallet'
+			/> */}
       <MarketplaceSection
         formState={formState}
         errors={errors}
@@ -265,8 +265,8 @@ const FormSection: React.FC<FormSectionProps> = ({
         </label>
         <div className="relative">
           <CustomSelect
-            showDeleteWallet={true} // Add this prop
-            options={updatedWalletOptions}
+            showDeleteWallet={true}
+            options={walletOptions}
             value={formState.wallet?.address || ""}
             onChange={(selectedValue) =>
               setFormState((prev) => ({

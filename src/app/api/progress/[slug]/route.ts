@@ -166,6 +166,8 @@ export async function GET(
               identifier === "default" ? "collection" : identifier
             }`;
           }
+
+          console.log({ offerKey });
           const offerPrice = await redis.get(offerKey);
           return {
             key: fullKey,

@@ -3,6 +3,7 @@ import { Inter, Roboto_Mono } from "next/font/google";
 import "./globals.css";
 import { GlobalProvider } from "./context/GlobalContext";
 import ToastProvider from "./context/ToastProvider";
+import { WebSocketProvider } from "./context/WebSocketContext";
 
 export const metadata: Metadata = {
   title:
@@ -37,8 +38,10 @@ export default function RootLayout({
     >
       <body>
         <GlobalProvider>
-          {children}
-          <ToastProvider />
+          <WebSocketProvider>
+            {children}
+            <ToastProvider />
+          </WebSocketProvider>
         </GlobalProvider>
       </body>
     </html>

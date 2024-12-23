@@ -4,7 +4,7 @@ import { useState, useCallback, useMemo, useEffect, useRef } from "react";
 import debounce from "lodash/debounce";
 import isEqual from "lodash/isEqual";
 import { toast } from "react-toastify";
-import { useWebSocket } from "./useWebSocket";
+import { useWebSocket } from "@/app/context/WebSocketContext";
 
 export const useTaskForm = (
   initialState: Omit<
@@ -13,11 +13,9 @@ export const useTaskForm = (
   >,
   taskId?: string
 ) => {
-  const NEXT_PUBLIC_SERVER_WEBSOCKET = process.env
-    .NEXT_PUBLIC_SERVER_WEBSOCKET as string;
+  const { sendMessage } = useWebSocket();
   const { addTask, editTask, tasks } = useTaskStore();
   const { wallets } = useWalletStore();
-  const { sendMessage } = useWebSocket(NEXT_PUBLIC_SERVER_WEBSOCKET);
 
   const existingTask = useMemo(() => {
     return taskId ? tasks.find((task) => task._id === taskId) : null;
