@@ -15,6 +15,7 @@ interface WebSocketContextType {
   retryConnection: () => void;
   taskLockData: any;
   bidStats: BidStats | null;
+  wsConnectionStatus: string | null;
 }
 
 const WebSocketContext = createContext<WebSocketContextType>({
@@ -23,6 +24,7 @@ const WebSocketContext = createContext<WebSocketContextType>({
   retryConnection: () => {},
   taskLockData: null,
   bidStats: null,
+  wsConnectionStatus: null,
 });
 
 export const useWebSocket = () => useContext(WebSocketContext);
@@ -32,7 +34,9 @@ export function WebSocketProvider({ children }: { children: React.ReactNode }) {
   const [isConnected, setIsConnected] = useState(false);
   const [taskLockData, setTaskLockData] = useState<any>(null);
   const [bidStats, setBidStats] = useState<BidStats | null>(null);
-
+  const [wsConnectionStatus, setWsConnectionStatus] = useState<string | null>(
+    "connected"
+  );
   const connect = useCallback(() => {
     if (
       ws.current?.readyState === WebSocket.CONNECTING ||
@@ -59,6 +63,8 @@ export function WebSocketProvider({ children }: { children: React.ReactNode }) {
           setTaskLockData(message.data);
         } else if (message.type === "bidRatesUpdate") {
           setBidStats(message.data);
+        } else if (message.type === "wsConnectionStatus") {
+          setWsConnectionStatus(message.data);
         }
       } catch (error) {
         console.error("Error parsing WebSocket message:", error);
@@ -84,8 +90,8 @@ export function WebSocketProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const retryConnection = useCallback(() => {
-    if (ws.current?.readyState === WebSocket.CLOSED) {
-      connect();
+    if (ws.current?.readyState === WebSocket.OPEN) {
+      ws.current.send(JSON.stringify({ endpoint: "retry-connection" }));
     } else {
       console.log("WebSocket is already connected or connecting");
     }
@@ -106,6 +112,7 @@ export function WebSocketProvider({ children }: { children: React.ReactNode }) {
         retryConnection,
         taskLockData,
         bidStats,
+        wsConnectionStatus,
       }}
     >
       {children}
@@ -126,6 +133,8 @@ interface BidCounts {
 export interface BidStats {
   bidRates: BidRates;
   bidCounts: BidCounts;
+  skipCounts: BidCounts;
+  errorCounts: BidCounts;
 }
 
 export interface BidRates {

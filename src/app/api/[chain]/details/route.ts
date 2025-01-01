@@ -1,7 +1,7 @@
 import axios from "axios";
 import { NextRequest, NextResponse } from "next/server";
 
-const API_KEY = process.env.API_KEY as string;
+const NEXT_PUBLIC_API_KEY = process.env.NEXT_PUBLIC_API_KEY as string;
 
 export async function GET(request: NextRequest) {
   try {
@@ -172,7 +172,7 @@ export async function fetchBlurFloorPrice(collectionSlug: string) {
     const response = await fetch(apiUrl, {
       headers: {
         accept: "application/json",
-        "X-NFT-API-Key": API_KEY,
+        "X-NFT-API-Key": NEXT_PUBLIC_API_KEY,
       },
     });
     if (!response.ok) {
@@ -193,7 +193,7 @@ export async function fetchMagicEdenData(collectionId: string) {
     const { data } = await axios.get<MagicEdenCollection>(url, {
       headers: {
         accept: "application/json",
-        "X-NFT-API-Key": API_KEY,
+        "X-NFT-API-Key": NEXT_PUBLIC_API_KEY,
       },
     });
     return +data.floorPrice.amount;
@@ -208,7 +208,7 @@ export async function fetchOpenSeaCollectionStats(collectionSlug: string) {
   try {
     const { data } = await axios.get(url, {
       headers: {
-        "X-NFT-API-Key": API_KEY,
+        "X-NFT-API-Key": NEXT_PUBLIC_API_KEY,
       },
     });
     return +data.total.floor_price;
@@ -223,7 +223,7 @@ export async function fetchBlurTraits(
   const url = `https://api.nfttools.website/blur/v1/traits/${contractAddress}`;
   try {
     const { data } = await axios.get(url, {
-      headers: { "X-NFT-API-Key": API_KEY },
+      headers: { "X-NFT-API-Key": NEXT_PUBLIC_API_KEY },
     });
     const traits = transformBlurTraits(data.traits);
     return { traits, blurRaw: data };
@@ -244,7 +244,7 @@ export async function fetchMagicEdenAttributes(
     const { data } = await axios.get<MagicEdenTraits>(url, {
       headers: {
         accept: "application/json",
-        "X-NFT-API-Key": API_KEY,
+        "X-NFT-API-Key": NEXT_PUBLIC_API_KEY,
       },
     });
 
@@ -308,7 +308,7 @@ const fetchTraitData = async (collectionSlug: string) => {
       data,
       {
         headers: {
-          "X-NFT-API-Key": API_KEY,
+          "X-NFT-API-Key": NEXT_PUBLIC_API_KEY,
           "content-type": "application/json",
           "x-signed-query":
             "6ae240a98f748a2ecef0a71cb6424c3d47c9c62691ca07ebadf318bf7fcc9517",
@@ -368,7 +368,7 @@ async function getOpenseaTraits(collectionSlug: string) {
       {
         headers: {
           accept: "application/json",
-          "X-NFT-API-Key": API_KEY,
+          "X-NFT-API-Key": NEXT_PUBLIC_API_KEY,
         },
       }
     );

@@ -3,25 +3,16 @@ import Redis, { Cluster } from "ioredis";
 
 config();
 
-const REDIS_URI = process.env.REDIS_URI as string;
+const REDIS_NODES = process.env.REDIS_NODES as string;
 
 const getRedisNodes = () => {
-  if (!REDIS_URI) {
-    throw new Error("REDIS_URL is not defined in the environment variables");
+  if (!REDIS_NODES) {
+    throw new Error("REDIS_NODES is not defined in the environment variables");
   }
-
-  return [
-    { host: "127.0.0.1", port: 8001 },
-    { host: "127.0.0.1", port: 8002 },
-    { host: "127.0.0.1", port: 8003 },
-    { host: "127.0.0.1", port: 8004 },
-    { host: "127.0.0.1", port: 8005 },
-    { host: "127.0.0.1", port: 8006 },
-    { host: "127.0.0.1", port: 8007 },
-    { host: "127.0.0.1", port: 8008 },
-    { host: "127.0.0.1", port: 8009 },
-  ];
+  return JSON.parse(REDIS_NODES);
 };
+
+const REDIS_NET_MAP = JSON.parse(process.env.REDIS_NET_MAP as string);
 
 const RETRY_MAX_ATTEMPTS = 30;
 const INITIAL_RETRY_DELAY = 2000;
@@ -39,9 +30,6 @@ const defaultConfig = {
       return null;
     }
     const delay = Math.min(times * INITIAL_RETRY_DELAY, 20000);
-    console.log(
-      `Retrying cluster connection attempt ${times} after ${delay}ms`
-    );
     return delay;
   },
   redisOptions: {
@@ -56,6 +44,16 @@ const defaultConfig = {
       return delay;
     },
   },
+  slotsRefreshTimeout: 30000,
+  showFriendlyErrorStack: true,
+  enableOfflineQueue: true,
+  reconnectOnError: (err: Error) => {
+    const targetError = "READONLY";
+    if (err.message.includes(targetError)) {
+      return true;
+    }
+    return false;
+  },
 };
 
 class RedisClient {
@@ -64,9 +62,11 @@ class RedisClient {
   private isConnected: boolean = false;
   private connectionAttempts: number = 0;
   private readonly maxConnectionAttempts = 10;
+  private connecting: boolean = false;
+  private connectionPromise: Promise<void> | null = null;
 
   private constructor() {
-    setTimeout(() => this.connect(), 5000);
+    // Don't connect immediately, wait for first getClient call
   }
 
   public static getInstance(): RedisClient {
@@ -76,8 +76,14 @@ class RedisClient {
     return RedisClient.instance;
   }
 
-  private async connect() {
-    if (!this.client) {
+  private async connect(): Promise<void> {
+    if (this.connecting || this.isConnected) {
+      return this.connectionPromise || Promise.resolve();
+    }
+
+    this.connecting = true;
+
+    this.connectionPromise = new Promise((resolve, reject) => {
       try {
         console.log("Initializing Redis Cluster connection...");
 
@@ -91,73 +97,77 @@ class RedisClient {
           enableOfflineQueue: true,
           slotsRefreshTimeout: 30000,
           dnsLookup: (address, callback) => callback(null, address),
-          natMap: {
-            "redis-node-1:6379": { host: "127.0.0.1", port: 8001 },
-            "redis-node-2:6379": { host: "127.0.0.1", port: 8002 },
-            "redis-node-3:6379": { host: "127.0.0.1", port: 8003 },
-            "redis-node-4:6379": { host: "127.0.0.1", port: 8004 },
-            "redis-node-5:6379": { host: "127.0.0.1", port: 8005 },
-            "redis-node-6:6379": { host: "127.0.0.1", port: 8006 },
-            "redis-node-7:6379": { host: "127.0.0.1", port: 8007 },
-            "redis-node-8:6379": { host: "127.0.0.1", port: 8008 },
-            "redis-node-9:6379": { host: "127.0.0.1", port: 8009 },
-          },
+          natMap: REDIS_NET_MAP,
         });
 
-        this.client.on("error", (err) => {
-          this.isConnected = false;
-          console.error("Redis Client Error:", err.message);
-          if (this.connectionAttempts < this.maxConnectionAttempts) {
-            this.connectionAttempts++;
-            setTimeout(() => {
-              console.log("Attempting to reconnect after error...");
-              this.connect();
-            }, 5000);
-          }
-        });
-
-        this.client.on("connect", () => {
-          console.log("Redis Cluster connecting...");
-        });
-
-        this.client.on("ready", () => {
-          this.isConnected = true;
-          this.connectionAttempts = 0;
-          console.log("Redis Cluster is ready");
-        });
-
-        this.client.on("reconnecting", () => {
-          console.log("Redis Cluster reconnecting...");
-        });
-
-        this.client.on("node error", (err: Error, node: any) => {
-          console.error("Redis Cluster Node Error:", err.message);
-          if (node) {
-            console.error("Node details:", {
-              id: node.id || "unknown",
-              address: node.address || "unknown",
-              options: node.options || {},
-            });
-          }
-        });
-
-        await this.client.connect();
+        this.setupEventHandlers(resolve, reject);
       } catch (error) {
-        if (this.connectionAttempts < this.maxConnectionAttempts) {
-          this.connectionAttempts++;
-          setTimeout(() => this.connect(), 5000);
-        } else {
-          throw error;
-        }
+        this.isConnected = false;
+        this.client = null;
+        this.connecting = false;
+        reject(error);
       }
-    }
+    });
+
+    return this.connectionPromise;
   }
 
-  public getClient(): Cluster {
-    if (!this.client) {
-      this.connect();
+  private setupEventHandlers(
+    resolve: () => void,
+    reject: (error: Error) => void
+  ) {
+    if (!this.client) return;
+
+    this.client.on("error", (err) => {
+      this.isConnected = false;
+      console.error("Redis Client Error:", err.message);
+      if (
+        !this.connecting &&
+        this.connectionAttempts < this.maxConnectionAttempts
+      ) {
+        this.connectionAttempts++;
+        this.connectionPromise = null;
+        setTimeout(() => this.connect(), 5000);
+      }
+      reject(err);
+    });
+
+    this.client.on("ready", () => {
+      this.isConnected = true;
+      this.connecting = false;
+      this.connectionAttempts = 0;
+      console.log("Redis Cluster is ready");
+      resolve();
+    });
+
+    this.client.on("connect", () => {
+      console.log("Redis Cluster connecting...");
+    });
+
+    this.client.on("reconnecting", () => {
+      console.log("Redis Cluster reconnecting...");
+    });
+
+    this.client.on("node error", (err: Error, node: any) => {
+      console.error("Redis Cluster Node Error:", err.message);
+      if (node) {
+        console.error("Node details:", {
+          id: node.id || "unknown",
+          address: node.address || "unknown",
+          options: node.options || {},
+        });
+      }
+    });
+  }
+
+  public async getClient(): Promise<Cluster> {
+    if (!this.client || !this.isConnected) {
+      await this.connect();
     }
-    return this.client!;
+    if (!this.client) {
+      throw new Error("Redis client is not initialized");
+    }
+    return this.client;
   }
 
   public isReady(): boolean {
@@ -165,4 +175,5 @@ class RedisClient {
   }
 }
 
-export default RedisClient.getInstance();
+const redisClientInstance = RedisClient.getInstance();
+export default redisClientInstance;

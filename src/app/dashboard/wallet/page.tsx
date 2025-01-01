@@ -7,6 +7,7 @@ import DeleteIcon from "@/assets/svg/DeleteIcon";
 import { toast } from "react-toastify";
 import DeleteWalletModal from "@/components/wallet/DeleteWalletModal";
 import CopyIcon from "@/assets/svg/CopyIcon";
+import Link from "next/link";
 
 const Wallet = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -109,6 +110,14 @@ const Wallet = () => {
       </div>
 
       <div className="overflow-x-auto">
+        <div className="my-4">
+          <Link
+            href="/dashboard/tasks"
+            className="text-Brand/Brand-1 underline font-semibold"
+          >
+            Back to Tasks
+          </Link>
+        </div>
         <table className="min-w-full bg-n-8 rounded-lg">
           <thead>
             <tr className="border-b border-n-6">

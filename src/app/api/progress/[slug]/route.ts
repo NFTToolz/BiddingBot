@@ -4,18 +4,37 @@ import { connect } from "@/utils/mongodb";
 import redisClient from "@/utils/redis";
 import { NextRequest, NextResponse } from "next/server";
 
-const redis = redisClient.getClient();
-
 export async function GET(
   request: NextRequest,
   { params }: { params: { slug: string } }
 ) {
+  const redis = await redisClient.getClient();
+
   await connect();
   const userId = await getUserIdFromCookies(request);
   const taskId = params.slug;
   const task = (await Task.findOne({
     _id: taskId,
   })) as unknown as ITask;
+
+  const magicedenOrderTrackingKey = `{${taskId}}:magiceden:orders`;
+  const magicedenOrderKeys = await redis.smembers(magicedenOrderTrackingKey);
+
+  const openseaOrderTrackingKey = `{${taskId}}:opensea:orders`;
+  const openseaOrderKeys = await redis.smembers(openseaOrderTrackingKey);
+
+  const blurOrderTrackingKey = `{${taskId}}:blur:orders`;
+  const blurOrderKeys = await redis.smembers(blurOrderTrackingKey);
+
+  const magicedenOrders = magicedenOrderKeys.length
+    ? await redis.mget(magicedenOrderKeys)
+    : [];
+  const openseaOrders = openseaOrderKeys.length
+    ? await redis.mget(openseaOrderKeys)
+    : [];
+  const blurOrders = blurOrderKeys.length
+    ? await redis.mget(blurOrderKeys)
+    : [];
   const bidType =
     task.bidType.toLowerCase() === "collection" &&
     Object.keys(task?.selectedTraits || {}).length > 0
@@ -23,199 +42,148 @@ export async function GET(
       : task.tokenIds.length > 0
       ? "TOKEN"
       : "COLLECTION";
+  const offers = [];
 
-  const selectedMarketplaces = task.selectedMarketplaces;
-  const selectedTraits = task.selectedTraits;
-  const orderKeys: string[] = [];
+  if (bidType === "TOKEN" || bidType === "COLLECTION") {
+    const magicedenBids = await Promise.all(
+      magicedenOrders.map(async (orderKey, index) => {
+        if (!orderKey) return null;
+        const parts = magicedenOrderKeys[index].split(":");
+        const bidCount = parts[1];
+        const orderData = JSON.parse(orderKey);
 
-  if (bidType === "TOKEN") {
-    for (const marketplace of selectedMarketplaces) {
-      const isBlur = marketplace.toLowerCase() === "blur";
-      const baseKey = `${marketplace.toLowerCase()}:order:${
-        task.contract.slug
-      }`;
+        return {
+          key: magicedenOrderKeys[index],
+          value: orderData.payload,
+          ttl: await redis.ttl(magicedenOrderKeys[index]),
+          marketplace: "magiceden",
+          offerPrice: orderData.offer,
+          bidCount,
+          identifier: parts[parts.length - 1],
+        };
+      })
+    );
 
-      if (isBlur) {
-        orderKeys.push(`${baseKey}:default`);
-      } else {
-        const pattern = `*:${taskId}:${baseKey}:*[0-9]`;
-        const matchingKeys = await redis.keys(pattern);
-        const tokenKeys = matchingKeys.map((key) => {
-          const parts = key.split(":");
-          return `${baseKey}:${parts[parts.length - 1]}`;
-        });
-        orderKeys.push(...tokenKeys);
-      }
-    }
+    const openseaBids = await Promise.all(
+      openseaOrders.map(async (orderKey, index) => {
+        if (!orderKey) return null;
+        const parts = openseaOrderKeys[index].split(":");
+        const bidCount = parts[1];
+        const orderData = JSON.parse(orderKey);
+
+        return {
+          key: openseaOrderKeys[index],
+          value: orderData.orderId,
+          ttl: await redis.ttl(openseaOrderKeys[index]),
+          marketplace: "opensea",
+          offerPrice: orderData.offer,
+          bidCount,
+          identifier: parts[parts.length - 1],
+        };
+      })
+    );
+
+    const blurBids = await Promise.all(
+      blurOrders.map(async (orderKey, index) => {
+        if (!orderKey) return null;
+        const parts = blurOrderKeys[index].split(":");
+        const bidCount = parts[1];
+        const orderData = JSON.parse(orderKey);
+
+        return {
+          key: blurOrderKeys[index],
+          value: orderData.payload,
+          ttl: await redis.ttl(blurOrderKeys[index]),
+          marketplace: "blur",
+          offerPrice: orderData.offer,
+          bidCount,
+          identifier: parts[parts.length - 1],
+        };
+      })
+    );
+
+    offers.push(
+      ...magicedenBids.filter((offer) => offer && offer.ttl > 0),
+      ...openseaBids.filter((offer) => offer && offer.ttl > 0),
+      ...blurBids.filter((offer) => offer && offer.ttl > 0)
+    );
   } else if (bidType === "TRAIT") {
-    for (const marketplace of selectedMarketplaces) {
-      const baseKey = `${marketplace.toLowerCase()}:order:${
-        task.contract.slug
-      }`;
+    const magicedenBids = await Promise.all(
+      magicedenOrders.map(async (orderKey, index) => {
+        if (!orderKey) return null;
+        const parts = magicedenOrderKeys[index].split(":");
+        const bidCount = parts[1];
+        const orderData = JSON.parse(orderKey);
 
-      for (const traitType in selectedTraits) {
-        for (const trait of selectedTraits[traitType]) {
-          switch (marketplace.toLowerCase()) {
-            case "magiceden":
-              const meTraitObject = JSON.stringify({
-                attributeKey: traitType,
-                attributeValue: trait.name,
-              });
-              orderKeys.push(`${baseKey}:${meTraitObject}`);
-              break;
-            case "blur":
-              const blurTraitObject = {
-                [traitType]: trait.name,
-              };
-              const jsonString = JSON.stringify(blurTraitObject);
-              orderKeys.push(`${baseKey}:${jsonString}`);
-              break;
-            case "opensea":
-              orderKeys.push(`${baseKey}:trait:${traitType}:${trait.name}`);
-              break;
-            default:
-              orderKeys.push(`${baseKey}:${traitType}:${trait.name}`);
-          }
-        }
-      }
-    }
-  } else if (bidType === "COLLECTION") {
-    for (const marketplace of selectedMarketplaces) {
-      const baseKey = `${marketplace.toLowerCase()}:order:${
-        task.contract.slug
-      }`;
-      orderKeys.push(`${baseKey}:default`);
-    }
+        return {
+          key: magicedenOrderKeys[index],
+          value: orderData.payload,
+          ttl: await redis.ttl(magicedenOrderKeys[index]),
+          marketplace: "magiceden",
+          identifier: `${parts[5]}:${parts[6]}`,
+          offerPrice: orderData.offer,
+          bidCount,
+          traitType: parts[5],
+          traitValue: parts[6],
+        };
+      })
+    );
+
+    const openseaBids = await Promise.all(
+      openseaOrders.map(async (orderKey, index) => {
+        if (!orderKey) return null;
+        const parts = openseaOrderKeys[index].split(":");
+        const bidCount = parts[1];
+        const orderData = JSON.parse(orderKey);
+
+        return {
+          key: openseaOrderKeys[index],
+          value: orderData.orderId,
+          ttl: await redis.ttl(openseaOrderKeys[index]),
+          marketplace: "opensea",
+          identifier: `${parts[5]}:${parts[6]}`,
+          offerPrice: orderData.offer,
+          bidCount,
+          traitType: parts[5],
+          traitValue: parts[6],
+        };
+      })
+    );
+
+    const blurBids = await Promise.all(
+      blurOrders.map(async (orderKey, index) => {
+        if (!orderKey) return null;
+        const parts = blurOrderKeys[index].split(":");
+        const bidCount = parts[1];
+        const orderData = JSON.parse(orderKey);
+
+        return {
+          key: blurOrderKeys[index],
+          value: orderData.payload,
+          ttl: await redis.ttl(blurOrderKeys[index]),
+          marketplace: "blur",
+          identifier: `${parts[5]}:${parts[6]}`,
+          offerPrice: orderData.offer,
+          bidCount,
+          traitType: parts[5],
+          traitValue: parts[6],
+        };
+      })
+    );
+    offers.push(
+      ...magicedenBids.filter((offer) => offer && offer.ttl > 0),
+      ...openseaBids.filter((offer) => offer && offer.ttl > 0),
+      ...blurBids.filter((offer) => offer && offer.ttl > 0)
+    );
+    offers.sort((a: any, b: any) => a.ttl - b.ttl);
   }
-  const bidData = await Promise.all(
-    orderKeys.map(async (key) => {
-      const pattern = `*:${taskId}:${key}`;
-      const matchingKeys = await redis.keys(pattern);
-      if (matchingKeys.length === 0) {
-        return null;
-      }
 
-      return await Promise.all(
-        matchingKeys.map(async (fullKey) => {
-          const parts = fullKey.split(":");
-          const bidCount = parts[0];
-          const taskId = parts[1];
-          const marketplace = parts[2];
-          const slug = parts[4];
-          const rest = parts.slice(5);
-          let identifier: any = rest.join(":");
-
-          if (marketplace.toLowerCase() === "opensea" && bidType === "TRAIT") {
-            const [, , , , traitType, traitValue] = key.split(":");
-            identifier = { type: traitType, value: traitValue };
-          } else if (
-            marketplace.toLowerCase() === "blur" &&
-            bidType === "TRAIT"
-          ) {
-            try {
-              const cleanIdentifier = identifier.replace(/^"|"$/g, "");
-              const traitObj = JSON.parse(cleanIdentifier);
-              const [[type, value]] = Object.entries(traitObj);
-              identifier = JSON.stringify({ [type]: value });
-            } catch (e) {
-              console.error("Error parsing Blur trait identifier:", e);
-              return null;
-            }
-          } else if (
-            marketplace.toLowerCase() === "magiceden" &&
-            bidType === "TRAIT"
-          ) {
-            try {
-              const parsedIdentifier = JSON.parse(identifier);
-              identifier = {
-                attributeKey: parsedIdentifier.attributeKey,
-                attributeValue: parsedIdentifier.attributeValue,
-              };
-            } catch (e) {
-              console.error("Error parsing MagicEden trait identifier:", e);
-              return null;
-            }
-          }
-
-          const [value, ttl] = await Promise.all([
-            redis.get(fullKey),
-            redis.ttl(fullKey),
-          ]);
-          let offerKey = `${bidCount}:${taskId}:${marketplace}:${slug}`;
-          if (marketplace.toLowerCase() === "opensea" && bidType === "TRAIT") {
-            offerKey += `:${JSON.stringify(identifier)}`;
-          } else if (marketplace.toLowerCase() === "blur") {
-            if (bidType === "TRAIT") {
-              offerKey += `:${identifier}`;
-            } else if (bidType === "COLLECTION") {
-              offerKey += `:collection`;
-            } else {
-              offerKey += `:${identifier}`;
-            }
-          } else if (bidType === "TOKEN") {
-            offerKey += `:${identifier}`;
-          } else if (bidType === "COLLECTION") {
-            offerKey += `:collection`;
-          } else if (marketplace.toLowerCase() === "magiceden") {
-            offerKey +=
-              bidType === "TRAIT"
-                ? `:${JSON.stringify(identifier)}`
-                : `:${identifier}`;
-          } else {
-            offerKey += `:${
-              identifier === "default" ? "collection" : identifier
-            }`;
-          }
-
-          console.log({ offerKey });
-          const offerPrice = await redis.get(offerKey);
-          return {
-            key: fullKey,
-            value,
-            ttl,
-            marketplace,
-            identifier,
-            offerPrice,
-            bidCount,
-          };
-        })
-      );
-    })
-  );
-
-  const flattenedBidData = bidData.flat();
-
-  const bids = flattenedBidData
-    .filter((bid) => bid !== null)
-    .map((bid) => {
-      if (bid.marketplace === "magiceden" && bid.value !== null) {
-        const value = JSON.parse(bid.value);
-        const orderId = value.orderId;
-        return { ...bid, value: orderId };
-      } else if (
-        bid.marketplace.toLowerCase() === "blur" &&
-        bid.value !== null
-      ) {
-        if (bidType === "TRAIT") {
-          try {
-            const traitObj = JSON.parse(bid.identifier);
-            const [[type, value]] = Object.entries(traitObj);
-            bid.identifier = { type, value };
-          } catch (e) {
-            console.error("Error parsing Blur trait identifier:", e);
-          }
-        }
-        return { ...bid };
-      } else {
-        return { ...bid };
-      }
-    });
-
-  console.log(bids);
-
-  const offers = bids.filter((bid) => bid.ttl > 0);
   if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   return NextResponse.json(offers, { status: 200 });
 }
+
+// MAGICEDEN TRAIT
+// orderKey: '677026c80d9933cecf91315b:258:magiceden:order:azuki:Offhand:Hand Wrap',
+// offerKey: '677026c80d9933cecf91315b:258:magiceden:azuki:Offhand:Hand Wrap'

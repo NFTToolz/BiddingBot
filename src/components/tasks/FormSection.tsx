@@ -5,6 +5,7 @@ import Toggle from "../common/Toggle";
 import TraitSelector from "./TraitSelector";
 import MarketplaceSection from "./MarketplaceSection";
 import LoadingIcon from "@/assets/svg/LoadingIcon";
+import { useTaskStore } from "@/store/task.store";
 
 interface FormSectionProps {
   formState: TaskFormState;
@@ -22,6 +23,7 @@ interface FormSectionProps {
   tokenIdInput: string;
   setTokenIdInput: React.Dispatch<React.SetStateAction<string>>;
   isFetchingTokens: boolean;
+  taskId: string;
 }
 
 const FormSection: React.FC<FormSectionProps> = ({
@@ -35,6 +37,7 @@ const FormSection: React.FC<FormSectionProps> = ({
   tokenIdInput,
   setTokenIdInput,
   isFetchingTokens,
+  taskId,
 }) => {
   const GENERAL_BID_PRICE = "GENERAL_BID_PRICE";
   const MARKETPLACE_BID_PRICE = "MARKETPLACE_BID_PRICE";
@@ -169,6 +172,7 @@ const FormSection: React.FC<FormSectionProps> = ({
   const handleBidPriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     const priceType = name.split(".")[1];
+
     const priceCategory = name.split(".")[0];
 
     setFormState((prev) => ({
@@ -217,6 +221,9 @@ const FormSection: React.FC<FormSectionProps> = ({
     >
   ) => {
     handleTraitChange(traits);
+    useTaskStore
+      .getState()
+      .editTask(taskId as string, { selectedTraits: traits });
   };
 
   const handleBidPriceTypeChange = (type: string) => {

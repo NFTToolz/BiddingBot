@@ -5,8 +5,6 @@ import TaskModal from "@/components/tasks/TaskModal";
 import { useTaskStore, Task } from "@/store/task.store";
 import React from "react";
 import TaskTable from "@/components/tasks/TaskTable";
-import Accordion from "@/components/common/Accordion";
-import RecentBids from "@/components/tasks/RecentBids";
 import { BidInfo, WebSocketResponse } from "@/interface";
 import TagFilter from "@/components/tasks/TagFilter";
 import { Tag } from "@/store/tag.store";
@@ -20,6 +18,12 @@ import { useRouter } from "next/navigation";
 import DeleteModal from "@/components/tasks/DeleteTaskModal";
 import { toast } from "react-toastify";
 import RetryIcon from "@/assets/svg/RetryIcon";
+import Link from "next/link";
+import SettingsModal from "@/components/settings/SettingsModal";
+import { useSettingsStore } from "@/store/settings.store";
+import DisconnectIcon from "@/assets/svg/DisconnectIcon";
+import PowerIcon from "@/assets/svg/PowerIcon";
+import UpdateIcon from "@/assets/svg/UpdateIcon";
 
 const processJSONImport = (jsonData: any): Partial<Task>[] => {
   if (Array.isArray(jsonData)) {
@@ -49,9 +53,17 @@ const Tasks = () => {
   const [selectedBidTypes, setSelectedBidTypes] = useState<BidType[]>([]);
   const [showExportDropdown, setShowExportDropdown] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
 
-  const { sendMessage, isConnected, retryConnection, taskLockData, bidStats } =
-    useWebSocket();
+  const { settings } = useSettingsStore();
+  const {
+    sendMessage,
+    wsConnectionStatus,
+    retryConnection,
+    taskLockData,
+    bidStats,
+    isConnected,
+  } = useWebSocket();
   const router = useRouter();
 
   useEffect(() => {
@@ -123,6 +135,22 @@ const Tasks = () => {
               blur: 0,
             },
           },
+          skipCounts: {
+            [task._id]: (bidStats?.skipCounts &&
+              bidStats.skipCounts[task._id]) || {
+              opensea: 0,
+              magiceden: 0,
+              blur: 0,
+            },
+          },
+          errorCounts: {
+            [task._id]: (bidStats?.errorCounts &&
+              bidStats.errorCounts[task._id]) || {
+              opensea: 0,
+              magiceden: 0,
+              blur: 0,
+            },
+          },
         },
       })
     );
@@ -139,6 +167,40 @@ const Tasks = () => {
         0
       ),
       magiceden: Object.values(bidStats?.bidCounts || {}).reduce(
+        (sum, stats) => sum + (stats.magiceden || 0),
+        0
+      ),
+    };
+  }, [bidStats]);
+
+  const skipBids = useMemo(() => {
+    return {
+      opensea: Object.values(bidStats?.skipCounts || {}).reduce(
+        (sum, stats) => sum + (stats.opensea || 0),
+        0
+      ),
+      blur: Object.values(bidStats?.skipCounts || {}).reduce(
+        (sum, stats) => sum + (stats.blur || 0),
+        0
+      ),
+      magiceden: Object.values(bidStats?.skipCounts || {}).reduce(
+        (sum, stats) => sum + (stats.magiceden || 0),
+        0
+      ),
+    };
+  }, [bidStats]);
+
+  const errorBids = useMemo(() => {
+    return {
+      opensea: Object.values(bidStats?.errorCounts || {}).reduce(
+        (sum, stats) => sum + (stats.opensea || 0),
+        0
+      ),
+      blur: Object.values(bidStats?.errorCounts || {}).reduce(
+        (sum, stats) => sum + (stats.blur || 0),
+        0
+      ),
+      magiceden: Object.values(bidStats?.errorCounts || {}).reduce(
         (sum, stats) => sum + (stats.magiceden || 0),
         0
       ),
@@ -507,110 +569,176 @@ const Tasks = () => {
     .filter((task) => selectedTasks.includes(task._id))
     .map((task) => task.contract.slug);
 
+  const apiKey = process.env.NEXT_PUBLIC_API_KEY;
+  const rateLimit = process.env.NEXT_PUBLIC_RATE_LIMIT;
+
+  useEffect(() => {
+    if (!settings.apiKey && !apiKey) {
+      toast.warning("Please set your API key in Settings to create tasks");
+    } else if (!settings.rateLimit && !rateLimit) {
+      toast.warning("Please set your rate limit in Settings to create tasks");
+    }
+  }, [settings.apiKey, settings.rateLimit]);
+
   return (
-    <section className="ml-0 sm:ml-20 p-4 sm:p-6 pb-24">
-      <div className="absolute top-0 right-12 flex items-center gap-4">
+    <section className="ml-4 p-4 sm:p-6 pb-24">
+      <div className="absolute top-0 right-12 flex items-center gap-4 mb-8">
         <RetryIcon retryConnection={retryConnection} />
         <p>server status</p>
-        {isConnected ? (
+        {wsConnectionStatus === "connected" ? (
           <div className="w-4 h-4 rounded-full bg-green-500"></div>
+        ) : wsConnectionStatus === "connecting" ? (
+          <div className="w-4 h-4 rounded-full bg-yellow-500"></div>
         ) : (
           <div className="w-4 h-4 rounded-full bg-red-500"></div>
         )}
       </div>
-      <div className="flex flex-col items-center justify-between mb-4 sm:mb-8 pb-4 sm:flex-row">
-        <h1 className="text-xl font-bold mb-4 sm:mb-0 sm:text-2xl md:text-[28px]">
-          Manage Tasks
-        </h1>
 
-        <div className="flex gap-4">
-          <button
-            className="dashboard-button"
-            onClick={() => setIsModalOpen(true)}
-          >
-            Create New Task
-          </button>
-          {importButton}
+      {!isConnected ? (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 mt-36 flex flex-col items-center justify-center">
+          <DisconnectIcon size={240} color="#AEB9E1" />
+          <p className="mt-4 text-lg text-gray-600">
+            Connection lost. Reconnecting...
+          </p>
         </div>
-      </div>
-      <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 mb-4 justify-between items-center">
-        <div className="flex gap-2 sm:gap-4">
-          <FilterInput
-            placeholder="Filter by slug"
-            value={filterText}
-            onChange={setFilterText}
-          />
-          <TagFilter selectedTags={selectedTags} onChange={setSelectedTags} />
-          <BidTypeFilter
+      ) : (
+        <div className={!isConnected ? "pointer-events-none opacity-50" : ""}>
+          <div className="flex flex-col items-center justify-between mb-4 sm:mb-8 pb-4 sm:flex-row mt-8">
+            <h1 className="text-xl font-bold mb-4 sm:mb-0 sm:text-2xl md:text-[28px]">
+              Manage Tasks
+            </h1>
+
+            <div className="flex gap-4">
+              <button
+                onClick={() => {
+                  sendMessage({ endpoint: "update" });
+                }}
+                className={`min-w-[166px] bg-Brand/Brand-1 px-6 py-3 rounded-md flex items-center gap-2 justify-center`}
+              >
+                <UpdateIcon width={24} height={24} />
+                <span className="text-white text-sm">Update</span>
+              </button>
+              <button
+                onClick={() => {
+                  sendMessage({ endpoint: "shutdown" });
+                }}
+                className={`min-w-[166px] ${
+                  isConnected ? "bg-red-500" : "bg-Brand/Brand-1"
+                } px-6 py-3 rounded-md flex items-center gap-2 justify-center`}
+              >
+                <PowerIcon width={24} height={24} />
+                <span className="text-white text-sm">Power</span>
+              </button>
+              <button
+                className="dashboard-button"
+                onClick={() => setIsModalOpen(true)}
+                disabled={!settings.apiKey || !settings.rateLimit}
+                title={
+                  !settings.apiKey
+                    ? "API Key required"
+                    : !settings.rateLimit
+                    ? "Rate limit required"
+                    : ""
+                }
+              >
+                Create New Task
+              </button>
+              {importButton}
+            </div>
+          </div>
+          <div className="mb-4 flex justify-start gap-4">
+            <Link
+              href="/dashboard/wallet"
+              className="text-Brand/Brand-1 underline font-semibold"
+            >
+              Manage Wallet
+            </Link>
+            <button
+              className="text-Brand/Brand-1 underline font-semibold"
+              onClick={() => setIsSettingsModalOpen(true)}
+            >
+              Settings
+            </button>
+          </div>
+          <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 mb-4 justify-between items-center">
+            <div className="flex gap-2 sm:gap-4">
+              <FilterInput
+                placeholder="Filter by slug"
+                value={filterText}
+                onChange={setFilterText}
+              />
+              <TagFilter
+                selectedTags={selectedTags}
+                onChange={setSelectedTags}
+              />
+              <BidTypeFilter
+                selectedBidTypes={selectedBidTypes}
+                onChange={setSelectedBidTypes}
+              />
+            </div>
+            <div className="flex items-center gap-2 sm:gap-4">
+              <button
+                className="dashboard-button"
+                onClick={() => toggleSelectedTasksStatus(true)}
+                disabled={selectedTasks.length === 0}
+              >
+                Start Selected
+              </button>
+              <button
+                className="dashboard-button !bg-[#ef4444]"
+                onClick={() => toggleSelectedTasksStatus(false)}
+                disabled={selectedTasks.length === 0}
+              >
+                Stop Selected
+              </button>
+              <button
+                className="dashboard-button !bg-[#ef4444]"
+                onClick={() => setIsDeleteModalOpen(true)}
+                disabled={selectedTasks.length === 0}
+              >
+                Delete Selected
+              </button>
+              {exportButton}
+            </div>
+          </div>
+
+          <TaskTable
+            tasks={tasks}
+            selectedTasks={selectedTasks}
+            selectAll={selectAll}
+            onToggleSelectAll={toggleSelectAll}
+            onToggleTaskSelection={toggleTaskSelection}
+            onToggleTaskStatus={toggleTaskRunning}
+            onToggleMarketplace={toggleMarketplace}
+            onEditTask={openEditModal}
+            filterText={filterText}
+            selectedTags={selectedTags}
             selectedBidTypes={selectedBidTypes}
-            onChange={setSelectedBidTypes}
+            mergedTasks={mergedTasks}
+            totalBids={totalBids}
+            errorBids={errorBids}
+            sendMessage={sendMessage}
+            bidStats={bidStats as BidStats}
+            skipBids={skipBids}
+          />
+          <TaskModal
+            isOpen={isModalOpen}
+            onClose={closeModal}
+            taskId={editingTask?._id}
+            initialTask={editingTask}
+          />
+          <DeleteModal
+            isOpen={isDeleteModalOpen}
+            onClose={() => setIsDeleteModalOpen(false)}
+            onConfirm={deleteSelectedTasks}
+            taskSlugs={selectedTaskSlugs}
+          />
+          <SettingsModal
+            isOpen={isSettingsModalOpen}
+            onClose={() => setIsSettingsModalOpen(false)}
           />
         </div>
-        <div className="flex items-center gap-2 sm:gap-4">
-          <button
-            className="dashboard-button"
-            onClick={() => toggleSelectedTasksStatus(true)}
-            disabled={selectedTasks.length === 0}
-          >
-            Start Selected
-          </button>
-          <button
-            className="dashboard-button !bg-[#ef4444]"
-            onClick={() => toggleSelectedTasksStatus(false)}
-            disabled={selectedTasks.length === 0}
-          >
-            Stop Selected
-          </button>
-          <button
-            className="dashboard-button !bg-[#ef4444]"
-            onClick={() => setIsDeleteModalOpen(true)}
-            disabled={selectedTasks.length === 0}
-          >
-            Delete Selected
-          </button>
-          {exportButton}
-        </div>
-      </div>
-      <Accordion title={`Tasks (${tasks.length})`}>
-        <TaskTable
-          tasks={tasks}
-          selectedTasks={selectedTasks}
-          selectAll={selectAll}
-          onToggleSelectAll={toggleSelectAll}
-          onToggleTaskSelection={toggleTaskSelection}
-          onToggleTaskStatus={toggleTaskRunning}
-          onToggleMarketplace={toggleMarketplace}
-          onEditTask={openEditModal}
-          filterText={filterText}
-          selectedTags={selectedTags}
-          selectedBidTypes={selectedBidTypes}
-          mergedTasks={mergedTasks}
-          totalBids={totalBids}
-          sendMessage={sendMessage}
-          bidStats={bidStats as BidStats}
-        />
-      </Accordion>
-      <RecentBids
-        bids={currentBids}
-        currentPage={currentPage}
-        recordsPerPage={recordsPerPage}
-        totalPages={Math.ceil(bids.length / recordsPerPage)}
-        setRecordsPerPage={setRecordsPerPage}
-        paginate={paginate}
-        renderPageNumbers={renderPageNumbers}
-      />
-      <TaskModal
-        isOpen={isModalOpen}
-        onClose={closeModal}
-        taskId={editingTask?._id}
-        initialTask={editingTask}
-      />
-      <DeleteModal
-        isOpen={isDeleteModalOpen}
-        onClose={() => setIsDeleteModalOpen(false)}
-        onConfirm={deleteSelectedTasks}
-        taskSlugs={selectedTaskSlugs}
-      />
+      )}
     </section>
   );
 };
@@ -667,8 +795,6 @@ const processData = (data: Task[]) => {
     "stopOptions.triggerStopOptions",
     "bidDuration.value",
     "bidDuration.unit",
-    "loopInterval.value",
-    "loopInterval.unit",
     "selectedMarketplaces",
     "running",
     "bidType",

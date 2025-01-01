@@ -10,6 +10,7 @@ import { Task, useTaskStore } from "@/store";
 import { useCallback, useState } from "react";
 import useSWR from "swr";
 import { toast } from "react-toastify";
+import Link from "next/link";
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
@@ -183,8 +184,18 @@ export default function Page({ params }: { params: { slug: string } }) {
   }
 
   return (
-    <section className="ml-0 sm:ml-20 p-4 sm:p-6 pb-24">
-      Task: {task?.contract.slug} ({data?.length} SUCCESSFUL BIDS)
+    <section className="ml-4 p-4 sm:p-6 pb-24">
+      <div>
+        Task: {task?.contract.slug} ({data?.length} SUCCESSFUL BIDS)
+      </div>
+      <div className="my-4">
+        <Link
+          href="/dashboard/tasks"
+          className="text-Brand/Brand-1 underline font-semibold"
+        >
+          Back to Tasks
+        </Link>
+      </div>
       <div className="flex items-center justify-between my-4">
         <MarketplaceFilter
           selectedMarketplaces={selectedMarketplaces}
@@ -386,7 +397,7 @@ export default function Page({ params }: { params: { slug: string } }) {
                         </div>
                       </label>
                     </td>
-                    <td className="py-2 px-2 sm:px-4 text-left sm:text-center flex items-center justify-center sm:table-cell ">
+                    <td className="py-2 px-2 sm:px-4 text-left sm:text-center flex items-center justify-start sm:table-cell ">
                       <div className="flex gap-2 items-center justify-center">
                         <span
                           className={`w-4 h-4 rounded-full ${
@@ -406,59 +417,24 @@ export default function Page({ params }: { params: { slug: string } }) {
                       <span>{task?.contract.slug}</span>
                       <div className="flex flex-row">
                         {(() => {
-                          if (
-                            typeof bid.identifier === "object" &&
-                            bid.identifier !== null
-                          ) {
-                            switch (bid.marketplace) {
-                              case "magiceden":
-                                return (
-                                  <div className="flex border border-n-4 gap-2">
-                                    <span className="border-n-4 border-r px-2 bg-n-5">
-                                      {bid.identifier.attributeKey}
-                                    </span>
-                                    <span className="px-2">
-                                      {bid.identifier.attributeValue}
-                                    </span>
-                                  </div>
-                                );
-                              case "opensea":
-                                return (
-                                  <div className="flex border border-n-4 gap-2">
-                                    <span className="border-n-4 border-r px-2 bg-n-5">
-                                      {bid.identifier.type}
-                                    </span>
-                                    <span className="px-2">
-                                      {bid.identifier.value}
-                                    </span>
-                                  </div>
-                                );
-                              case "blur":
-                                return (
-                                  <div className="flex border border-n-4 gap-2">
-                                    <span className="border-n-4 border-r px-2 bg-n-5">
-                                      {bid.identifier.type}
-                                    </span>
-                                    <span className="px-2">
-                                      {bid.identifier.value}
-                                    </span>
-                                  </div>
-                                );
-                            }
-                          } else if (
-                            typeof bid.identifier === "string" &&
-                            bid.identifier !== "default"
-                          ) {
-                            const num = Number(bid.identifier);
-                            if (!isNaN(num) && isFinite(num)) {
-                              return (
-                                <span className="px-2 bg-n-5">
-                                  {bid.identifier}
+                          if (bid?.identifier?.split(":").length == 2) {
+                            return (
+                              <div className="flex border border-n-4 gap-2">
+                                <span className="border-n-4 border-r px-2 bg-n-5">
+                                  {bid?.identifier?.split(":")[0]}
                                 </span>
-                              );
-                            }
+                                <span className="px-2">
+                                  {bid?.identifier?.split(":")[1]}
+                                </span>
+                              </div>
+                            );
+                          } else {
+                            return (
+                              <span className="px-2 bg-n-5">
+                                {bid?.identifier}
+                              </span>
+                            );
                           }
-                          return null;
                         })()}
                       </div>
                     </td>

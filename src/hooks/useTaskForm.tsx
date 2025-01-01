@@ -516,9 +516,18 @@ export const useTaskForm = (
       { name: string; availableInMarketplaces: string[] }[]
     >
   ) => {
-    console.log({ traits });
-
     setFormState((prev) => ({ ...prev, selectedTraits: traits }));
+  };
+
+  const handleBidTypeChange = (type: string) => {
+    setFormState((prev) => ({
+      ...prev,
+      bidType: type,
+      // Clear tokenIds when switching to collection type
+      tokenIds: type === "collection" ? [] : prev.tokenIds,
+      // Clear selected traits when switching to token type
+      selectedTraits: type === "token" ? {} : prev.selectedTraits,
+    }));
   };
 
   return {
@@ -532,6 +541,7 @@ export const useTaskForm = (
     handleTagChange,
     handleTraitChange,
     debouncedValidateSlug,
+    handleBidTypeChange,
   };
 };
 

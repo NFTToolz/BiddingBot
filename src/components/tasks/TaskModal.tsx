@@ -27,7 +27,7 @@ interface MagicEdenQueryParams {
   limit?: number;
 }
 
-const API_KEY = process.env.API_KEY as string;
+const NEXT_PUBLIC_API_KEY = process.env.NEXT_PUBLIC_API_KEY as string;
 
 interface TaskModalProps {
   isOpen: boolean;
@@ -562,7 +562,7 @@ const TaskModal: React.FC<TaskModalProps> = ({
             const { data } = await axios.get<TokenResponse>(
               "https://api.nfttools.website/magiceden/v3/rtp/ethereum/tokens/v7",
               {
-                headers: { "X-NFT-API-Key": API_KEY },
+                headers: { "X-NFT-API-Key": NEXT_PUBLIC_API_KEY },
                 params: {
                   ...queryParams,
                   ...(continuation && { continuation }),
@@ -704,6 +704,7 @@ const TaskModal: React.FC<TaskModalProps> = ({
               tokenIdInput={tokenIdInput}
               setTokenIdInput={setTokenIdInput}
               isFetchingTokens={isFetchingTokens}
+              taskId={taskId as string} // Add this line
             />
 
             {formState.outbidOptions.outbid ? (
@@ -731,13 +732,10 @@ const TaskModal: React.FC<TaskModalProps> = ({
           </button>
         </div>
       </form>
-
-      {isWalletModalOpen && (
-        <WalletModal
-          isOpen={isWalletModalOpen}
-          onClose={handleWalletModalClose}
-        />
-      )}
+      <WalletModal
+        isOpen={isWalletModalOpen}
+        onClose={handleWalletModalClose}
+      />
     </Modal>
   );
 };

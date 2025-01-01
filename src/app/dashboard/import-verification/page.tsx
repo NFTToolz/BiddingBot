@@ -7,6 +7,7 @@ import TaskModal from "@/components/tasks/TaskModal";
 import { useTaskStore, Task } from "@/store/task.store";
 import React from "react";
 import { toast } from "react-toastify";
+import { useWebSocket } from "@/app/context/WebSocketContext";
 
 const ImportVerification = () => {
   const router = useRouter();
@@ -15,6 +16,8 @@ const ImportVerification = () => {
   const [editingTask, setEditingTask] = React.useState<Task | null>(null);
   const [selectedTasks, setSelectedTasks] = React.useState<string[]>([]);
   const [selectAll, setSelectAll] = React.useState(false);
+
+  const { sendMessage } = useWebSocket();
 
   // Redirect if no imported tasks
   useEffect(() => {
@@ -39,6 +42,11 @@ const ImportVerification = () => {
         },
         body: JSON.stringify(tasksToImport),
         credentials: "include",
+      });
+
+      sendMessage({
+        endpoint: "import-tasks",
+        data: tasksToImport,
       });
 
       if (!response.ok) {
@@ -104,10 +112,8 @@ const ImportVerification = () => {
     setSelectAll(!selectAll);
   };
 
-  console.log({ selectedTasks, importedTasks });
-
   return (
-    <section className="ml-0 sm:ml-20 p-4 sm:p-6 pb-24">
+    <section className="ml-4 p-4 sm:p-6 pb-24">
       <div className="flex flex-col items-center justify-between mb-4 sm:mb-8 pb-4 sm:flex-row">
         <h1 className="text-xl font-bold mb-4 sm:mb-0 sm:text-2xl md:text-[28px]">
           Verify Imported Tasks

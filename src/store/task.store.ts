@@ -38,7 +38,7 @@ export const useTaskStore = create(
                   magicEdenValid: task.magicEdenValid,
                   blurValid: task.blurValid,
                   selectedTraits:
-                    updatedTask.selectedTraits ?? task.selectedTraits,
+                    updatedTask.selectedTraits || task.selectedTraits,
                   bidDuration: updatedTask.bidDuration ?? task.bidDuration,
                   loopInterval: updatedTask.loopInterval ?? task.loopInterval,
                   bidPrice: {

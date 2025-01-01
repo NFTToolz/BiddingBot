@@ -8,17 +8,17 @@ import { NextRequest, NextResponse } from "next/server";
 import axiosRetry, { IAxiosRetryConfig } from "axios-retry";
 import PQueue from "p-queue";
 import { config } from "dotenv";
+import { Cluster } from "ioredis";
 
 config();
-const API_KEY = process.env.API_KEY as string;
+const NEXT_PUBLIC_API_KEY = process.env.NEXT_PUBLIC_API_KEY as string;
 const BLUR_API_URL = "https://api.nfttools.website/blur";
 
-const redis = redisClient.getClient();
-const ALCHEMY_API_KEY = "HGWgCONolXMB2op5UjPH1YreDCwmSbvx";
+const ALCHEMY_API_KEY = process.env.ALCHEMY_API_KEY as string;
 const provider = new ethers.AlchemyProvider("mainnet", ALCHEMY_API_KEY);
 export const SEAPORT_CONTRACT_ADDRESS =
   "0x0000000000000068f116a894984e2db1123eb395";
-const rateLimit = 30;
+const rateLimit = parseInt(process.env.NEXT_PUBLIC_RATE_LIMIT as string);
 
 const queue = new PQueue({
   concurrency: rateLimit,
@@ -84,6 +84,8 @@ export async function POST(
   { params }: { params: { slug: string } }
 ) {
   try {
+    const redis = await redisClient.getClient();
+
     const bids: OfferData[] = await request.json();
     const userId = await getUserIdFromCookies(request);
     const slug = params.slug;
@@ -99,7 +101,7 @@ export async function POST(
     }
 
     const task = (await Task.findOne({
-      "contract.slug": slug,
+      _id: slug,
       user: userId,
     })) as unknown as ITask;
 
@@ -113,38 +115,53 @@ export async function POST(
     const blurBids = bids.filter((bid) => bid.marketplace === "blur");
 
     if (magicedenBids.length > 0) {
+      const orderTrackingKey = `{${slug}}:magiceden:orders`;
       const BATCH_SIZE = 1000;
       for (let i = 0; i < magicedenBids.length; i += BATCH_SIZE) {
         const batch = magicedenBids.slice(i, i + BATCH_SIZE);
-        await cancelMagicEdenBid(
-          batch.map((bid) => bid.value),
-          privateKey
-        );
-        await Promise.all(batch.map((bid) => redis.del(bid.key)));
+
+        await Promise.all([
+          cancelMagicEdenBid(
+            batch.map((bid) => bid.value),
+            privateKey
+          ),
+          ...batch.flatMap((bid) => [
+            redis.del(bid.key),
+            redis.srem(orderTrackingKey, bid.key),
+          ]),
+        ]);
       }
     }
 
     if (openseaBids.length > 0) {
+      const orderTrackingKey = `{${slug}}:opensea:orders`;
+
       await queue.addAll(
         openseaBids.map((item, index) => async () => {
-          await cancelOpenseaBid(
-            item.value,
-            SEAPORT_CONTRACT_ADDRESS,
-            privateKey
-          );
-          await redis.del(item.key);
+          await Promise.all([
+            cancelOpenseaBid(item.value, SEAPORT_CONTRACT_ADDRESS, privateKey),
+            redis.srem(orderTrackingKey, item.key),
+            redis.del(item.key),
+          ]);
         })
       );
     }
 
     if (blurBids.length > 0) {
+      const orderTrackingKey = `{${slug}}:blur:orders`;
+
       await queue.addAll(
         blurBids.map((item) => async () => {
-          const payload = JSON.parse(item.value);
+          console.log({ item });
+
+          const payload: any = item.value;
           const privateKey = task.wallet.privateKey;
           const data: BlurCancelPayload = { payload, privateKey };
-          await cancelBlurBid(data);
-          await redis.del(item.key);
+          await Promise.all([
+            cancelBlurBid(data, redis),
+            redis.srem(orderTrackingKey, item.key),
+            redis.del(item.key),
+          ]);
         })
       );
     }
@@ -157,12 +174,14 @@ export async function POST(
   }
 }
 
-export async function cancelBlurBid(data: BlurCancelPayload) {
+export async function cancelBlurBid(data: BlurCancelPayload, redis: Cluster) {
   try {
+    console.log({ data });
     const { payload, privateKey } = data;
+
     const wallet = new Wallet(privateKey, provider);
     const walletAddress = wallet.address;
-    const accessToken = await getAccessToken(BLUR_API_URL, privateKey);
+    const accessToken = await getAccessToken(BLUR_API_URL, privateKey, redis);
     const endpoint = `${BLUR_API_URL}/v1/collection-bids/cancel`;
     const { data: cancelResponse } = await limiter.schedule(() =>
       axiosInstance.post(endpoint, payload, {
@@ -170,7 +189,7 @@ export async function cancelBlurBid(data: BlurCancelPayload) {
           "content-type": "application/json",
           authToken: accessToken,
           walletAddress: walletAddress.toLowerCase(),
-          "X-NFT-API-Key": API_KEY,
+          "X-NFT-API-Key": NEXT_PUBLIC_API_KEY,
         },
       })
     );
@@ -182,18 +201,19 @@ export async function cancelBlurBid(data: BlurCancelPayload) {
 
 async function getAccessToken(
   url: string,
-  private_key: string
+  private_key: string,
+  redis: Cluster
 ): Promise<string | undefined> {
   const wallet = new Wallet(private_key, provider);
   const options = { walletAddress: wallet.address };
 
   const headers = {
     "content-type": "application/json",
-    "X-NFT-API-Key": API_KEY,
+    "X-NFT-API-Key": NEXT_PUBLIC_API_KEY,
   };
 
   try {
-    const key = `blur-access-token-${wallet.address}`;
+    const key = `{blurAccessToken}:${wallet.address}`;
     const cachedToken = await redis.get(key);
     if (cachedToken) {
       return cachedToken;
@@ -244,7 +264,7 @@ export async function cancelOpenseaBid(
 
   const headers = {
     "content-type": "application/json",
-    "X-NFT-API-Key": API_KEY,
+    "X-NFT-API-Key": NEXT_PUBLIC_API_KEY,
   };
 
   const body = {
@@ -303,14 +323,35 @@ export async function cancelMagicEdenBid(
   privateKey: string
 ) {
   try {
+    const extractedOrderIds = orderIds
+      .map((bid) => {
+        if (!bid) return null;
+        try {
+          const parsed = JSON.parse(bid);
+
+          if (parsed.results) {
+            return parsed.results[0].orderId;
+          }
+          if (parsed.message && parsed.orderId) {
+            return parsed.orderId;
+          }
+
+          return null;
+        } catch (e) {
+          console.error("Error parsing bid data:", e);
+          return null;
+        }
+      })
+      .filter((id) => id !== null);
+
     const { data } = await limiter.schedule(() =>
       axiosInstance.post<MagicEdenCancelOfferCancel>(
         "https://api.nfttools.website/magiceden/v3/rtp/ethereum/execute/cancel/v3",
-        { orderIds },
+        { orderIds: extractedOrderIds },
         {
           headers: {
             "content-type": "application/json",
-            "X-NFT-API-Key": API_KEY,
+            "X-NFT-API-Key": NEXT_PUBLIC_API_KEY,
           },
         }
       )
@@ -330,7 +371,7 @@ export async function cancelMagicEdenBid(
           },
           types: { OrderHashes: [{ name: "orderHashes", type: "bytes32[]" }] },
           value: {
-            orderHashes: [...orderIds],
+            orderHashes: [...extractedOrderIds],
           },
           primaryType: "OrderHashes",
         };
@@ -339,7 +380,7 @@ export async function cancelMagicEdenBid(
     const cancelBody = cancelItem
       ? body
       : {
-          orderIds: [...orderIds],
+          orderIds: [...extractedOrderIds],
           orderKind: "payment-processor-v2",
         };
     const { data: cancelResponse } = await limiter.schedule(() =>
@@ -349,7 +390,7 @@ export async function cancelMagicEdenBid(
         {
           headers: {
             "content-type": "application/json",
-            "X-NFT-API-Key": API_KEY,
+            "X-NFT-API-Key": NEXT_PUBLIC_API_KEY,
           },
         }
       )

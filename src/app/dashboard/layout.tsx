@@ -78,32 +78,18 @@ export default function RootLayout({ children }: any) {
   }, [setTags]);
 
   return (
-    <main className="relative">
-      {!isConnected && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex flex-col items-center justify-center">
-          <DisconnectIcon size={240} color="#AEB9E1" />
-          <p className="mt-4 text-lg text-gray-600">
-            Connection lost. Reconnecting...
-          </p>
-        </div>
-      )}
+    <main className="relative mt-8">
+      {/* {!isConnected && (
+				<div className='fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex flex-col items-center justify-center'>
+					<DisconnectIcon size={240} color='#AEB9E1' />
+					<p className='mt-4 text-lg text-gray-600'>
+						Connection lost. Reconnecting...
+					</p>
+				</div>
+			)} */}
       <Suspense>
-        <div className={!isConnected ? "pointer-events-none opacity-50" : ""}>
-          <DashboardHeader />
-          <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
-          <div className="transition-all duration-300">
-            <button
-              onClick={() => {
-                setShowSidebar(true);
-                router.back();
-              }}
-              className="flex items-center gap-3 ml-28 mt-28"
-            >
-              <BackIcon fill="#AEB9E1" />
-              <h3>Back</h3>
-            </button>
-            {children}
-          </div>
+        <div>
+          <div className="transition-all duration-300">{children}</div>
         </div>
       </Suspense>
     </main>

@@ -1,46 +1,38 @@
-# Use an official Node.js runtime as the base image
-FROM node:20-alpine AS base
-
-# Check https://github.com/nodejs/docker-node/tree/b4117f9333da4138b03a546ec926ef50a31506c3#nodealpine
+# Build stage
+FROM node:20-alpine AS builder
 RUN apk add --no-cache libc6-compat
-
-# Set the working directory in the container
 WORKDIR /app
 
-# Copy package.json and package-lock.json
+# Copy package files
 COPY package*.json ./
 
-# Install dependencies
+# Install all dependencies
 RUN npm ci
 
-# Copy the rest of the application code
+# Copy source files
 COPY . .
 
-# Build the Next.js application
-# RUN npm run build
+# Build the application
+RUN npm run build
 
-# Production image, copy all the files and run next
+# Production stage
 FROM node:20-alpine AS runner
-
 WORKDIR /app
 
-# Copy built assets from the base image
-COPY --from=base /app/.next ./.next
-COPY --from=base /app/node_modules ./node_modules
-COPY --from=base /app/package.json ./package.json
-COPY --from=base /app/public ./public
+# Copy package files for production
+COPY package*.json ./
 
-COPY . .
+# Install only production dependencies
+RUN npm ci --only=production
 
-# Replace useradd with adduser for Alpine
+# Copy built files from builder stage
+COPY --from=builder /app/.next ./.next
+COPY --from=builder /app/public ./public
+COPY --from=builder /app/node_modules ./node_modules
+
+# Create and set up the user
 RUN adduser -D -u 1001 app
 USER app
 
-# Copy source files into application directory
-COPY --chown=app:app . /app
-
-# Expose the port that the application will run on
 EXPOSE 3001
-
-# Start the application
-CMD ["npm", "run", "dev"]
+CMD ["npm", "run", "start"]

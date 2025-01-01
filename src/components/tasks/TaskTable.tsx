@@ -40,12 +40,17 @@ interface TaskTableProps {
     blur: number;
     magiceden: number;
   };
-  previousTotalBidsRef?: React.MutableRefObject<{
+  skipBids?: {
     opensea: number;
     blur: number;
     magiceden: number;
-  }>;
-  sendMessage: (message: any) => void;
+  };
+  errorBids?: {
+    opensea: number;
+    blur: number;
+    magiceden: number;
+  };
+  sendMessage?: (message: any) => void;
 }
 
 const TaskTable: React.FC<TaskTableProps> = ({
@@ -59,7 +64,9 @@ const TaskTable: React.FC<TaskTableProps> = ({
   isVerificationMode = false,
   mergedTasks,
   totalBids,
+  skipBids,
   tasks,
+  errorBids,
   sendMessage,
   bidStats,
 }) => {
@@ -91,7 +98,10 @@ const TaskTable: React.FC<TaskTableProps> = ({
             endpoint: "stop-task",
             data: taskToDelete,
           };
-          sendMessage(message);
+
+          if (sendMessage) {
+            sendMessage(message);
+          }
         } catch (error) {
           console.log("handleDeleteConfirm: ", error);
           toast.error("Failed to delete task");
@@ -123,38 +133,99 @@ const TaskTable: React.FC<TaskTableProps> = ({
       bidStats.bidRates.blur.bidsPerSecond +
       bidStats.bidRates.magiceden.bidsPerSecond;
 
+  const getBidType = (task: Task) => {
+    if (task.tokenIds.length > 0) {
+      return "TOKEN";
+    }
+    if (Object.keys(task.selectedTraits || {}).length > 0) {
+      return "TRAIT";
+    }
+    return task.bidType.toUpperCase();
+  };
+
   return (
     <>
       {isVerificationMode ? null : (
-        <div className="flex my-4 gap-4">
-          {["opensea", "blur", "magiceden"].map((marketplace, index) => (
-            <div className="flex gap-2 items-center" key={index}>
-              <div
-                className={`w-4 h-4 rounded-full ${
-                  marketplace === "opensea"
-                    ? "bg-[#2081e2]"
-                    : marketplace === "blur"
-                    ? "bg-[#FF8700]"
-                    : marketplace === "magiceden"
-                    ? "bg-[#e42575]"
-                    : ""
-                }`}
-              ></div>
-              <div>
-                {
-                  (totalBids || { opensea: 0, blur: 0, magiceden: 0 })[
-                    marketplace as keyof typeof totalBids
-                  ]
-                }
+        <>
+          <div className="flex my-4 gap-4 text-sm">
+            <p>Active Bids</p>
+            {["opensea", "blur", "magiceden"].map((marketplace, index) => (
+              <div className="flex gap-2 items-center" key={index}>
+                <div
+                  className={`w-4 h-4 rounded-full ${
+                    marketplace === "opensea"
+                      ? "bg-[#2081e2]"
+                      : marketplace === "blur"
+                      ? "bg-[#FF8700]"
+                      : marketplace === "magiceden"
+                      ? "bg-[#e42575]"
+                      : ""
+                  }`}
+                ></div>
+                <div>
+                  {
+                    (totalBids || { opensea: 0, blur: 0, magiceden: 0 })[
+                      marketplace as keyof typeof totalBids
+                    ]
+                  }
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
 
-          <div className="flex gap-4">
-            <p>Bid Per Second:</p>
-            <p>{Math.ceil(totalBidsPerSecond)} / s</p>
+            <div className="flex gap-4">
+              <p>Bid Per Second:</p>
+              <p>{Math.ceil(totalBidsPerSecond)} / s</p>
+            </div>
           </div>
-        </div>
+
+          <div className="flex my-4 gap-4 text-sm">
+            <p>Skipped Bids</p>
+            {["opensea", "blur", "magiceden"].map((marketplace, index) => (
+              <div className="flex gap-2 items-center" key={index}>
+                <div
+                  className={`w-4 h-4 rounded-full ${
+                    marketplace === "opensea"
+                      ? "bg-[#2081e2]"
+                      : marketplace === "blur"
+                      ? "bg-[#FF8700]"
+                      : marketplace === "magiceden"
+                      ? "bg-[#e42575]"
+                      : ""
+                  }`}
+                ></div>
+                <div>
+                  {(skipBids || { opensea: 0, blur: 0, magiceden: 0 })[
+                    marketplace as keyof typeof skipBids
+                  ] || 0}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="flex my-4 gap-4 text-sm">
+            <p>Error Bids</p>
+            {["opensea", "blur", "magiceden"].map((marketplace, index) => (
+              <div className="flex gap-2 items-center" key={index}>
+                <div
+                  className={`w-4 h-4 rounded-full ${
+                    marketplace === "opensea"
+                      ? "bg-[#2081e2]"
+                      : marketplace === "blur"
+                      ? "bg-[#FF8700]"
+                      : marketplace === "magiceden"
+                      ? "bg-[#e42575]"
+                      : ""
+                  }`}
+                ></div>
+                <div>
+                  {(errorBids || { opensea: 0, blur: 0, magiceden: 0 })[
+                    marketplace as keyof typeof errorBids
+                  ] || 0}
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
       )}
       <div className="border rounded-2xl py-3 sm:py-5 px-2 sm:px-6 bg-[#1f2129] border-Neutral/Neutral-Border-[night] h-full">
         <div className="overflow-x-auto w-full">
@@ -195,13 +266,20 @@ const TaskTable: React.FC<TaskTableProps> = ({
                     </div>
                   </label>
                 </th>
-                <th scope="col" className="px-6 py-3 text-center w-[150px]">
+                <th scope="col" className="px-6 py-3 text-center w-[180px]">
                   Slug
                 </th>
                 {isVerificationMode ? null : (
                   <>
-                    <th scope="col" className="px-6 py-3 text-center w-[150px]">
-                      Progress
+                    <th scope="col" className="px-6 py-3 text-center w-[180px]">
+                      Active Bids
+                    </th>
+
+                    <th scope="col" className="px-6 py-3 text-center w-[180px]">
+                      Skipped Bids
+                    </th>
+                    <th scope="col" className="px-6 py-3 text-center w-[180px]">
+                      Error Bids
                     </th>
                   </>
                 )}
@@ -214,8 +292,44 @@ const TaskTable: React.FC<TaskTableProps> = ({
                 <th scope="col" className="px-6 py-3 text-center w-[120px]">
                   Max Price
                 </th>
-                <th scope="col" className="px-6 py-3 text-center w-[100px]">
-                  OS
+                <th
+                  scope="col"
+                  className="px-6 py-3 text-center w-[100px] flex items-center gap-2"
+                >
+                  <span>OS</span>
+                  <Toggle
+                    checked={
+                      selectedTasks.length > 0 &&
+                      tasks.every((task) =>
+                        selectedTasks.includes(task._id)
+                          ? task.selectedMarketplaces.includes("OpenSea")
+                          : true
+                      )
+                    }
+                    onChange={() => {
+                      if (selectedTasks.length === 0) return;
+                      const allSelected = tasks.every((task) =>
+                        selectedTasks.includes(task._id)
+                          ? task.selectedMarketplaces.includes("OpenSea")
+                          : true
+                      );
+
+                      selectedTasks.forEach((taskId) => {
+                        const task = tasks.find((t) => t._id === taskId);
+                        if (!task) return;
+
+                        if (allSelected) {
+                          onToggleMarketplace(taskId, "OpenSea");
+                        } else if (task.slugValid) {
+                          if (!task.selectedMarketplaces.includes("OpenSea")) {
+                            onToggleMarketplace(taskId, "OpenSea");
+                          }
+                        }
+                      });
+                    }}
+                    activeColor="#2081e2"
+                    inactiveColor="#3F3F46"
+                  />
                 </th>
                 <th scope="col" className="px-6 py-3 text-center w-[100px]">
                   Blur
@@ -281,7 +395,7 @@ const TaskTable: React.FC<TaskTableProps> = ({
                           </div>
                         </label>
                       </td>
-                      <td className="px-6 py-4 text-center w-[150px]">
+                      <td className="px-6 py-4 text-center w-[180px]">
                         <Link
                           href={`/dashboard/tasks/${task._id}`}
                           className="text-Brand/Brand-1 underline"
@@ -292,7 +406,7 @@ const TaskTable: React.FC<TaskTableProps> = ({
 
                       {isVerificationMode ? null : (
                         <>
-                          <td className="px-6 py-4 text-center w-[150px] text-sm">
+                          <td className="px-6 py-4 text-center w-[180px] text-sm">
                             {task.selectedMarketplaces.length > 0
                               ? task.selectedMarketplaces
                                   .sort()
@@ -366,7 +480,7 @@ const TaskTable: React.FC<TaskTableProps> = ({
                               : "--"}
                           </td>
 
-                          <td className="px-6 py-4 text-center w-[150px] text-sm">
+                          <td className="px-6 py-4 text-center w-[180px] text-sm">
                             {task.selectedMarketplaces.length > 0
                               ? task.selectedMarketplaces
                                   .sort()
@@ -374,9 +488,40 @@ const TaskTable: React.FC<TaskTableProps> = ({
                                     marketplace.toLowerCase()
                                   )
                                   .map((marketplace, index) => {
+                                    const total =
+                                      task.bidType === "collection" &&
+                                      Object.keys(task?.selectedTraits || {})
+                                        .length == 0
+                                        ? 1
+                                        : Object.keys(
+                                            task?.selectedTraits || {}
+                                          ).length > 0
+                                        ? Object.values(
+                                            task.selectedTraits
+                                          ).reduce(
+                                            (
+                                              acc: number,
+                                              curr: {
+                                                name: string;
+                                                availableInMarketplaces: string[];
+                                              }[]
+                                            ) => {
+                                              return (
+                                                acc +
+                                                curr.filter((trait) =>
+                                                  trait.availableInMarketplaces
+                                                    .map((m) => m.toLowerCase())
+                                                    .includes(marketplace)
+                                                ).length
+                                              );
+                                            },
+                                            0
+                                          )
+                                        : task.tokenIds?.length || 1;
+
                                     return (
                                       <div
-                                        className="flex gap-2 items-center justify-center"
+                                        className="flex gap-2 items-center"
                                         key={index}
                                       >
                                         <div
@@ -390,13 +535,28 @@ const TaskTable: React.FC<TaskTableProps> = ({
                                               : ""
                                           }`}
                                         ></div>
+                                        {isMergedTask(task) ? (
+                                          <div>
+                                            {
+                                              task.bidStats.skipCounts[
+                                                task._id
+                                              ][
+                                                marketplace as
+                                                  | "opensea"
+                                                  | "blur"
+                                                  | "magiceden"
+                                              ]
+                                            }{" "}
+                                            / {total}
+                                          </div>
+                                        ) : null}
                                       </div>
                                     );
                                   })
                               : "--"}
                           </td>
 
-                          <td className="px-6 py-4 text-center w-[150px] text-sm">
+                          <td className="px-6 py-4 text-center w-[180px] text-sm">
                             {task.selectedMarketplaces.length > 0
                               ? task.selectedMarketplaces
                                   .sort()
@@ -404,9 +564,40 @@ const TaskTable: React.FC<TaskTableProps> = ({
                                     marketplace.toLowerCase()
                                   )
                                   .map((marketplace, index) => {
+                                    const total =
+                                      task.bidType === "collection" &&
+                                      Object.keys(task?.selectedTraits || {})
+                                        .length == 0
+                                        ? 1
+                                        : Object.keys(
+                                            task?.selectedTraits || {}
+                                          ).length > 0
+                                        ? Object.values(
+                                            task.selectedTraits
+                                          ).reduce(
+                                            (
+                                              acc: number,
+                                              curr: {
+                                                name: string;
+                                                availableInMarketplaces: string[];
+                                              }[]
+                                            ) => {
+                                              return (
+                                                acc +
+                                                curr.filter((trait) =>
+                                                  trait.availableInMarketplaces
+                                                    .map((m) => m.toLowerCase())
+                                                    .includes(marketplace)
+                                                ).length
+                                              );
+                                            },
+                                            0
+                                          )
+                                        : task.tokenIds?.length || 1;
+
                                     return (
                                       <div
-                                        className="flex gap-2 items-center justify-center"
+                                        className="flex gap-2 items-center"
                                         key={index}
                                       >
                                         <div
@@ -420,6 +611,21 @@ const TaskTable: React.FC<TaskTableProps> = ({
                                               : ""
                                           }`}
                                         ></div>
+                                        {isMergedTask(task) ? (
+                                          <div>
+                                            {
+                                              task.bidStats.errorCounts[
+                                                task._id
+                                              ][
+                                                marketplace as
+                                                  | "opensea"
+                                                  | "blur"
+                                                  | "magiceden"
+                                              ]
+                                            }{" "}
+                                            / {total}
+                                          </div>
+                                        ) : null}
                                       </div>
                                     );
                                   })
@@ -428,11 +634,7 @@ const TaskTable: React.FC<TaskTableProps> = ({
                         </>
                       )}
                       <td className="px-6 py-4 text-center w-[120px]">
-                        {Object.keys(task?.selectedTraits || {}).length > 0
-                          ? "TRAIT"
-                          : task.bidType === "token" && task.tokenIds.length > 0
-                          ? "TOKEN"
-                          : task.bidType.toUpperCase()}
+                        {getBidType(task)}
                       </td>
                       <td className="px-6 py-4 text-center w-[120px]">
                         <div className="flex flex-col">
@@ -649,7 +851,7 @@ const TaskTable: React.FC<TaskTableProps> = ({
                                   endpoint: "toggle-status",
                                   data: task,
                                 };
-                                sendMessage(message);
+                                sendMessage && sendMessage(message);
                               }}
                             />
                             <div

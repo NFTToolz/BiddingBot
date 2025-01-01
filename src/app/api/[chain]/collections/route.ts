@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const API_KEY = process.env.API_KEY as string;
+const NEXT_PUBLIC_API_KEY = process.env.NEXT_PUBLIC_API_KEY as string;
 export const RESET = "\x1b[0m";
 
 export async function GET(request: NextRequest) {
@@ -9,7 +9,7 @@ export async function GET(request: NextRequest) {
     const slug = searchParams.get("slug") as string;
     const apiUrl: string = `https://api.nfttools.website/opensea/api/v2/collections/${slug?.toLowerCase()}`;
     const response = await fetch(apiUrl, {
-      headers: { "X-NFT-API-Key": API_KEY },
+      headers: { "X-NFT-API-Key": NEXT_PUBLIC_API_KEY },
     });
     if (!response.ok) {
       throw new Error("Failed to fetch collection data");
