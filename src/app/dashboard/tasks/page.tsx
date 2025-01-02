@@ -595,7 +595,7 @@ const Tasks = () => {
       </div>
 
       {!isConnected ? (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 mt-36 flex flex-col items-center justify-center">
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex flex-col items-center justify-center">
           <DisconnectIcon size={240} color="#AEB9E1" />
           <p className="mt-4 text-lg text-gray-600">
             Connection lost. Reconnecting...

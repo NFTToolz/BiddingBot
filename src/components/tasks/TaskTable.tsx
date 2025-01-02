@@ -1,10 +1,4 @@
-import React, {
-  useState,
-  useEffect,
-  useCallback,
-  useMemo,
-  useRef,
-} from "react";
+import React, { useState, useEffect } from "react";
 import { Task } from "@/store/task.store";
 import Toggle from "@/components/common/Toggle";
 import EditIcon from "@/assets/svg/EditIcon";
@@ -19,39 +13,6 @@ import { BidStats } from "@/app/context/WebSocketContext";
 
 const GENERAL_BID_PRICE = "GENERAL_BID_PRICE";
 const MARKETPLACE_BID_PRICE = "MARKETPLACE_BID_PRICE";
-
-interface TaskTableProps {
-  tasks: Task[];
-  selectedTasks: string[];
-  selectAll: boolean;
-  onToggleSelectAll: () => void;
-  onToggleTaskSelection: (taskId: string) => void;
-  onToggleTaskStatus: (taskId: string) => void;
-  onToggleMarketplace: (taskId: string, marketplace: string) => void;
-  onEditTask: (task: Task) => void;
-  filterText: string;
-  selectedTags: Tag[];
-  selectedBidTypes?: ("COLLECTION" | "TOKEN" | "TRAIT")[]; // Make this prop optional
-  isVerificationMode?: boolean;
-  mergedTasks?: MergedTask[];
-  bidStats?: BidStats;
-  totalBids?: {
-    opensea: number;
-    blur: number;
-    magiceden: number;
-  };
-  skipBids?: {
-    opensea: number;
-    blur: number;
-    magiceden: number;
-  };
-  errorBids?: {
-    opensea: number;
-    blur: number;
-    magiceden: number;
-  };
-  sendMessage?: (message: any) => void;
-}
 
 const TaskTable: React.FC<TaskTableProps> = ({
   selectedTasks,
@@ -227,12 +188,12 @@ const TaskTable: React.FC<TaskTableProps> = ({
           </div>
         </>
       )}
-      <div className="border rounded-2xl py-3 sm:py-5 px-2 sm:px-6 bg-[#1f2129] border-Neutral/Neutral-Border-[night] h-full">
+      <div className="border rounded-2xl py-3 sm:py-5 px-2 sm:px-3 bg-[#1f2129] border-Neutral/Neutral-Border-[night] h-full">
         <div className="overflow-x-auto w-full">
           <table className="min-w-full table-fixed whitespace-nowrap text-sm">
             <thead className="hidden sm:table-header-group">
               <tr className="border-b border-Neutral/Neutral-Border-[night]">
-                <th scope="col" className="px-6 py-3 text-center w-[100px]">
+                <th scope="col" className="px-3 py-3 text-center w-[100px]">
                   <label className="inline-flex items-center cursor-pointer">
                     <input
                       type="checkbox"
@@ -266,89 +227,177 @@ const TaskTable: React.FC<TaskTableProps> = ({
                     </div>
                   </label>
                 </th>
-                <th scope="col" className="px-6 py-3 text-center w-[180px]">
+                <th scope="col" className="px-3 py-3 text-center w-[180px]">
                   Slug
                 </th>
                 {isVerificationMode ? null : (
                   <>
-                    <th scope="col" className="px-6 py-3 text-center w-[180px]">
+                    <th scope="col" className="px-3 py-3 text-center w-[180px]">
                       Active Bids
                     </th>
 
-                    <th scope="col" className="px-6 py-3 text-center w-[180px]">
+                    <th scope="col" className="px-3 py-3 text-center w-[180px]">
                       Skipped Bids
                     </th>
-                    <th scope="col" className="px-6 py-3 text-center w-[180px]">
+                    <th scope="col" className="px-3 py-3 text-center w-[180px]">
                       Error Bids
                     </th>
                   </>
                 )}
-                <th scope="col" className="px-6 py-3 text-center w-[120px]">
+                <th scope="col" className="px-3 py-3 text-center w-[120px]">
                   Bid Type
                 </th>
-                <th scope="col" className="px-6 py-3 text-center w-[120px]">
+                <th scope="col" className="px-3 py-3 text-center w-[120px]">
                   Min Price
                 </th>
-                <th scope="col" className="px-6 py-3 text-center w-[120px]">
+                <th scope="col" className="px-3 py-3 text-center w-[120px]">
                   Max Price
                 </th>
-                <th
-                  scope="col"
-                  className="px-6 py-3 text-center w-[100px] flex items-center gap-2"
-                >
-                  <span>OS</span>
-                  <Toggle
-                    checked={
-                      selectedTasks.length > 0 &&
-                      tasks.every((task) =>
-                        selectedTasks.includes(task._id)
-                          ? task.selectedMarketplaces.includes("OpenSea")
-                          : true
-                      )
-                    }
-                    onChange={() => {
-                      if (selectedTasks.length === 0) return;
-                      const allSelected = tasks.every((task) =>
-                        selectedTasks.includes(task._id)
-                          ? task.selectedMarketplaces.includes("OpenSea")
-                          : true
-                      );
+                <th scope="col" className="px-3 py-3 text-center w-[150px]">
+                  <div className="flex items-center gap-2 justify-center">
+                    <span>OS</span>
+                    <Toggle
+                      checked={
+                        selectedTasks.length > 0 &&
+                        tasks.some((task) =>
+                          selectedTasks.includes(task._id)
+                            ? task.selectedMarketplaces.includes("OpenSea")
+                            : true
+                        )
+                      }
+                      onChange={() => {
+                        if (selectedTasks.length === 0) return;
+                        const allSelected = tasks.every((task) =>
+                          selectedTasks.includes(task._id)
+                            ? task.selectedMarketplaces.includes("OpenSea")
+                            : true
+                        );
 
-                      selectedTasks.forEach((taskId) => {
-                        const task = tasks.find((t) => t._id === taskId);
-                        if (!task) return;
+                        selectedTasks.forEach((taskId) => {
+                          const task = tasks.find((t) => t._id === taskId);
+                          if (!task) return;
 
-                        if (allSelected) {
-                          onToggleMarketplace(taskId, "OpenSea");
-                        } else if (task.slugValid) {
-                          if (!task.selectedMarketplaces.includes("OpenSea")) {
+                          if (allSelected) {
                             onToggleMarketplace(taskId, "OpenSea");
+                          } else if (task.slugValid) {
+                            if (
+                              !task.selectedMarketplaces.includes("OpenSea")
+                            ) {
+                              onToggleMarketplace(taskId, "OpenSea");
+                            }
                           }
-                        }
-                      });
-                    }}
-                    activeColor="#2081e2"
-                    inactiveColor="#3F3F46"
-                  />
+                        });
+                      }}
+                      activeColor="#2081e2"
+                      inactiveColor="#3F3F46"
+                    />
+                  </div>
                 </th>
-                <th scope="col" className="px-6 py-3 text-center w-[100px]">
-                  Blur
+                <th scope="col" className="px-3 py-3 text-center w-[150px]">
+                  <div className="flex items-center gap-2 justify-center">
+                    <span>Blur</span>
+                    <Toggle
+                      checked={
+                        selectedTasks.length > 0 &&
+                        tasks.some((task) =>
+                          selectedTasks.includes(task._id)
+                            ? task.selectedMarketplaces.includes("Blur")
+                            : true
+                        )
+                      }
+                      onChange={() => {
+                        if (selectedTasks.length === 0) return;
+
+                        const eligibleTasks = tasks.filter(
+                          (task) =>
+                            selectedTasks.includes(task._id) &&
+                            task.blurValid &&
+                            task.bidType !== "token"
+                        );
+
+                        if (eligibleTasks.length === 0) return; // No eligible tasks selected
+
+                        // Check if all eligible tasks have Blur selected
+                        const allEligibleSelected = eligibleTasks.every(
+                          (task) => task.selectedMarketplaces.includes("Blur")
+                        );
+
+                        // Toggle marketplace for eligible tasks only
+                        selectedTasks.forEach((taskId) => {
+                          const task = tasks.find((t) => t._id === taskId);
+                          if (!task) return;
+
+                          if (allEligibleSelected) {
+                            // If all eligible tasks are selected, deselect Blur for all
+                            onToggleMarketplace(taskId, "Blur");
+                          } else if (
+                            task.blurValid &&
+                            task.bidType !== "token"
+                          ) {
+                            // Only add Blur to eligible tasks that don't already have it
+                            if (!task.selectedMarketplaces.includes("Blur")) {
+                              onToggleMarketplace(taskId, "Blur");
+                            }
+                          }
+                        });
+                      }}
+                      activeColor="#FF8700"
+                      inactiveColor="#3F3F46"
+                    />
+                  </div>
                 </th>
-                <th scope="col" className="px-6 py-3 text-center w-[100px]">
-                  MagicEden
+                <th scope="col" className="px-3 py-3 text-center w-[150px]">
+                  <div className="flex items-center gap-2 justify-center">
+                    <span>MagicEden</span>
+                    <Toggle
+                      checked={
+                        selectedTasks.length > 0 &&
+                        tasks.some((task) =>
+                          selectedTasks.includes(task._id)
+                            ? task.selectedMarketplaces.includes("MagicEden")
+                            : true
+                        )
+                      }
+                      onChange={() => {
+                        if (selectedTasks.length === 0) return;
+                        const allSelected = tasks.every((task) =>
+                          selectedTasks.includes(task._id)
+                            ? task.selectedMarketplaces.includes("MagicEden")
+                            : true
+                        );
+
+                        selectedTasks.forEach((taskId) => {
+                          const task = tasks.find((t) => t._id === taskId);
+                          if (!task) return;
+
+                          if (allSelected) {
+                            onToggleMarketplace(taskId, "MagicEden");
+                          } else if (task.magicEdenValid) {
+                            if (
+                              !task.selectedMarketplaces.includes("MagicEden")
+                            ) {
+                              onToggleMarketplace(taskId, "MagicEden");
+                            }
+                          }
+                        });
+                      }}
+                      activeColor="#e42575"
+                      inactiveColor="#3F3F46"
+                    />
+                  </div>
                 </th>
-                <th scope="col" className="px-6 py-3 text-center w-[100px]">
+                <th scope="col" className="px-3 py-3 text-center w-[100px]">
                   Tags
                 </th>
                 {isVerificationMode ? null : (
-                  <th scope="col" className="px-6 py-3 text-center w-[100px]">
+                  <th scope="col" className="px-3 py-3 text-center w-[100px]">
                     Start
                   </th>
                 )}
-                <th scope="col" className="px-6 py-3 text-center w-[80px]">
+                <th scope="col" className="px-3 py-3 text-center w-[80px]">
                   Edit
                 </th>
-                <th scope="col" className="px-6 py-3 text-center w-[80px]">
+                <th scope="col" className="px-3 py-3 text-center w-[80px]">
                   Delete
                 </th>
               </tr>
@@ -361,7 +410,7 @@ const TaskTable: React.FC<TaskTableProps> = ({
                       key={task._id}
                       className="border-b border-Neutral/Neutral-Border-[night] sm:table-row"
                     >
-                      <td className="px-6 py-4 text-center w-[100px]">
+                      <td className="px-3 py-4 text-center w-[100px]">
                         <label className="inline-flex items-center cursor-pointer">
                           <input
                             type="checkbox"
@@ -395,7 +444,7 @@ const TaskTable: React.FC<TaskTableProps> = ({
                           </div>
                         </label>
                       </td>
-                      <td className="px-6 py-4 text-center w-[180px]">
+                      <td className="px-3 py-4 text-center w-[180px]">
                         <Link
                           href={`/dashboard/tasks/${task._id}`}
                           className="text-Brand/Brand-1 underline"
@@ -406,7 +455,7 @@ const TaskTable: React.FC<TaskTableProps> = ({
 
                       {isVerificationMode ? null : (
                         <>
-                          <td className="px-6 py-4 text-center w-[180px] text-sm">
+                          <td className="px-3 py-4 text-center w-[500px] text-sm">
                             {task.selectedMarketplaces.length > 0
                               ? task.selectedMarketplaces
                                   .sort()
@@ -480,7 +529,7 @@ const TaskTable: React.FC<TaskTableProps> = ({
                               : "--"}
                           </td>
 
-                          <td className="px-6 py-4 text-center w-[180px] text-sm">
+                          <td className="px-3 py-4 text-center w-[180px] text-sm">
                             {task.selectedMarketplaces.length > 0
                               ? task.selectedMarketplaces
                                   .sort()
@@ -556,7 +605,7 @@ const TaskTable: React.FC<TaskTableProps> = ({
                               : "--"}
                           </td>
 
-                          <td className="px-6 py-4 text-center w-[180px] text-sm">
+                          <td className="px-3 py-4 text-center w-[180px] text-sm">
                             {task.selectedMarketplaces.length > 0
                               ? task.selectedMarketplaces
                                   .sort()
@@ -633,10 +682,10 @@ const TaskTable: React.FC<TaskTableProps> = ({
                           </td>
                         </>
                       )}
-                      <td className="px-6 py-4 text-center w-[120px]">
+                      <td className="px-3 py-4 text-center w-[120px]">
                         {getBidType(task)}
                       </td>
-                      <td className="px-6 py-4 text-center w-[120px]">
+                      <td className="px-3 py-4 text-center w-[120px]">
                         <div className="flex flex-col">
                           {task.bidPrice.min &&
                           task.bidPrice.minType &&
@@ -683,7 +732,7 @@ const TaskTable: React.FC<TaskTableProps> = ({
                           ) : null}
                         </div>
                       </td>
-                      <td className="px-6 py-4 text-center w-[120px]">
+                      <td className="px-3 py-4 text-center w-[120px]">
                         <div className="flex flex-col">
                           {task.bidPrice.max &&
                           task.bidPrice.maxType &&
@@ -770,7 +819,7 @@ const TaskTable: React.FC<TaskTableProps> = ({
                           ) : null}
                         </div>
                       </td>
-                      <td className="px-6 py-4 text-center w-[100px]">
+                      <td className="px-3 py-4 text-center w-[100px]">
                         <span className="sm:hidden font-bold">OpenSea</span>
                         <Toggle
                           checked={task.selectedMarketplaces.includes(
@@ -788,7 +837,7 @@ const TaskTable: React.FC<TaskTableProps> = ({
                           inactiveColor="#3F3F46"
                         />
                       </td>
-                      <td className="px-6 py-4 text-center w-[100px]">
+                      <td className="px-3 py-4 text-center w-[100px]">
                         <span className="sm:hidden font-bold">Blur</span>
                         <Toggle
                           checked={task.selectedMarketplaces.includes("Blur")}
@@ -804,7 +853,7 @@ const TaskTable: React.FC<TaskTableProps> = ({
                           inactiveColor="#3F3F46"
                         />
                       </td>
-                      <td className="px-6 py-4 text-center w-[100px]">
+                      <td className="px-3 py-4 text-center w-[100px]">
                         <span className="sm:hidden font-bold">MagicEden</span>
                         <Toggle
                           checked={task.selectedMarketplaces.includes(
@@ -824,7 +873,7 @@ const TaskTable: React.FC<TaskTableProps> = ({
                           inactiveColor="#3F3F46"
                         />
                       </td>
-                      <td className="px-6 py-4 text-center w-[100px]">
+                      <td className="px-3 py-4 text-center w-[100px]">
                         <span className="sm:hidden font-bold">Tags</span>
                         <div className="flex flex-wrap gap-1 items-center justify-center">
                           {task.tags.map((tag) => (
@@ -838,7 +887,7 @@ const TaskTable: React.FC<TaskTableProps> = ({
                       </td>
 
                       {isVerificationMode ? null : (
-                        <td className="px-6 py-4 text-center w-[100px]">
+                        <td className="px-3 py-4 text-center w-[100px]">
                           <span className="sm:hidden font-bold">Start</span>
                           <label className="inline-flex items-center cursor-pointer">
                             <input
@@ -868,7 +917,7 @@ const TaskTable: React.FC<TaskTableProps> = ({
                           </label>
                         </td>
                       )}
-                      <td className="px-6 py-4 text-center w-[80px]">
+                      <td className="px-3 py-4 text-center w-[80px]">
                         <span className="sm:hidden font-bold">Edit</span>
                         <div className="flex items-center justify-end sm:justify-center">
                           <button onClick={() => onEditTask(task)}>
@@ -876,7 +925,7 @@ const TaskTable: React.FC<TaskTableProps> = ({
                           </button>
                         </div>
                       </td>
-                      <td className="px-6 py-4 text-center w-[80px]">
+                      <td className="px-3 py-4 text-center w-[80px]">
                         <span className="sm:hidden font-bold">Delete</span>
                         <div className="flex items-center justify-end sm:justify-center">
                           <button onClick={() => handleDeleteClick(task)}>
@@ -885,7 +934,7 @@ const TaskTable: React.FC<TaskTableProps> = ({
                         </div>
                       </td>
                       {isVerificationMode && (
-                        <td className="px-6 py-4 text-center w-[80px]">
+                        <td className="px-3 py-4 text-center w-[80px]">
                           {(!task.wallet?.address ||
                             !task.wallet?.privateKey) && (
                             <div
@@ -921,8 +970,35 @@ const TaskTable: React.FC<TaskTableProps> = ({
 
 export default TaskTable;
 
-interface MarketplaceBids {
-  opensea: number;
-  magiceden: number;
-  blur: number;
+interface TaskTableProps {
+  tasks: Task[];
+  selectedTasks: string[];
+  selectAll: boolean;
+  onToggleSelectAll: () => void;
+  onToggleTaskSelection: (taskId: string) => void;
+  onToggleTaskStatus: (taskId: string) => void;
+  onToggleMarketplace: (taskId: string, marketplace: string) => void;
+  onEditTask: (task: Task) => void;
+  filterText: string;
+  selectedTags: Tag[];
+  selectedBidTypes?: ("COLLECTION" | "TOKEN" | "TRAIT")[]; // Make this prop optional
+  isVerificationMode?: boolean;
+  mergedTasks?: MergedTask[];
+  bidStats?: BidStats;
+  totalBids?: {
+    opensea: number;
+    blur: number;
+    magiceden: number;
+  };
+  skipBids?: {
+    opensea: number;
+    blur: number;
+    magiceden: number;
+  };
+  errorBids?: {
+    opensea: number;
+    blur: number;
+    magiceden: number;
+  };
+  sendMessage?: (message: any) => void;
 }
