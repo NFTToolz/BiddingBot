@@ -257,35 +257,12 @@ const TaskTable: React.FC<TaskTableProps> = ({
                   <div className="flex items-center gap-2 justify-center">
                     <span>OS</span>
                     <Toggle
-                      checked={
-                        selectedTasks.length > 0 &&
-                        tasks.some((task) =>
-                          selectedTasks.includes(task._id)
-                            ? task.selectedMarketplaces.includes("OpenSea")
-                            : true
-                        )
-                      }
+                      checked={tasks.some((task) =>
+                        task.selectedMarketplaces.includes("OpenSea")
+                      )}
                       onChange={() => {
-                        if (selectedTasks.length === 0) return;
-                        const allSelected = tasks.every((task) =>
-                          selectedTasks.includes(task._id)
-                            ? task.selectedMarketplaces.includes("OpenSea")
-                            : true
-                        );
-
-                        selectedTasks.forEach((taskId) => {
-                          const task = tasks.find((t) => t._id === taskId);
-                          if (!task) return;
-
-                          if (allSelected) {
-                            onToggleMarketplace(taskId, "OpenSea");
-                          } else if (task.slugValid) {
-                            if (
-                              !task.selectedMarketplaces.includes("OpenSea")
-                            ) {
-                              onToggleMarketplace(taskId, "OpenSea");
-                            }
-                          }
+                        tasks.forEach((task) => {
+                          onToggleMarketplace(task._id, "OpenSea");
                         });
                       }}
                       activeColor="#2081e2"
@@ -297,48 +274,17 @@ const TaskTable: React.FC<TaskTableProps> = ({
                   <div className="flex items-center gap-2 justify-center">
                     <span>Blur</span>
                     <Toggle
-                      checked={
-                        selectedTasks.length > 0 &&
-                        tasks.some((task) =>
-                          selectedTasks.includes(task._id)
-                            ? task.selectedMarketplaces.includes("Blur")
-                            : true
-                        )
-                      }
+                      checked={tasks.some((task) =>
+                        task.selectedMarketplaces.includes("Blur")
+                      )}
                       onChange={() => {
-                        if (selectedTasks.length === 0) return;
-
-                        const eligibleTasks = tasks.filter(
-                          (task) =>
-                            selectedTasks.includes(task._id) &&
-                            task.blurValid &&
-                            task.bidType !== "token"
-                        );
-
-                        if (eligibleTasks.length === 0) return; // No eligible tasks selected
-
-                        // Check if all eligible tasks have Blur selected
-                        const allEligibleSelected = eligibleTasks.every(
-                          (task) => task.selectedMarketplaces.includes("Blur")
-                        );
-
-                        // Toggle marketplace for eligible tasks only
-                        selectedTasks.forEach((taskId) => {
-                          const task = tasks.find((t) => t._id === taskId);
-                          if (!task) return;
-
-                          if (allEligibleSelected) {
-                            // If all eligible tasks are selected, deselect Blur for all
-                            onToggleMarketplace(taskId, "Blur");
-                          } else if (
-                            task.blurValid &&
-                            task.bidType !== "token"
-                          ) {
-                            // Only add Blur to eligible tasks that don't already have it
-                            if (!task.selectedMarketplaces.includes("Blur")) {
-                              onToggleMarketplace(taskId, "Blur");
-                            }
-                          }
+                        tasks.forEach((task) => {
+                          if (
+                            !task.selectedMarketplaces.includes("Blur") &&
+                            (!task.blurValid || task.bidType === "token")
+                          )
+                            return;
+                          onToggleMarketplace(task._id, "Blur");
                         });
                       }}
                       activeColor="#FF8700"
@@ -350,35 +296,12 @@ const TaskTable: React.FC<TaskTableProps> = ({
                   <div className="flex items-center gap-2 justify-center">
                     <span>MagicEden</span>
                     <Toggle
-                      checked={
-                        selectedTasks.length > 0 &&
-                        tasks.some((task) =>
-                          selectedTasks.includes(task._id)
-                            ? task.selectedMarketplaces.includes("MagicEden")
-                            : true
-                        )
-                      }
+                      checked={tasks.some((task) =>
+                        task.selectedMarketplaces.includes("MagicEden")
+                      )}
                       onChange={() => {
-                        if (selectedTasks.length === 0) return;
-                        const allSelected = tasks.every((task) =>
-                          selectedTasks.includes(task._id)
-                            ? task.selectedMarketplaces.includes("MagicEden")
-                            : true
-                        );
-
-                        selectedTasks.forEach((taskId) => {
-                          const task = tasks.find((t) => t._id === taskId);
-                          if (!task) return;
-
-                          if (allSelected) {
-                            onToggleMarketplace(taskId, "MagicEden");
-                          } else if (task.magicEdenValid) {
-                            if (
-                              !task.selectedMarketplaces.includes("MagicEden")
-                            ) {
-                              onToggleMarketplace(taskId, "MagicEden");
-                            }
-                          }
+                        tasks.forEach((task) => {
+                          onToggleMarketplace(task._id, "MagicEden");
                         });
                       }}
                       activeColor="#e42575"

@@ -51,8 +51,8 @@ const OutbidSection = ({ formState, setFormState }: IOutbidSection) => {
             }
           >
             {formState.outbidOptions.counterbid
-              ? "Disable Counterbidding"
-              : "Enable Counterbidding"}
+              ? "Disable Instant Counter Bidding"
+              : "Enable Instant Counter Bidding"}
           </span>
         </div>
       </div>

@@ -8,12 +8,15 @@ export async function authMiddleware(request: NextRequest) {
   if (!token) {
     return NextResponse.redirect(new URL("/auth/signin", request.url));
   }
-
   try {
     const secret = new TextEncoder().encode(process.env.JWT_SECRET);
+
+    console.log({ secret });
+
     const { payload } = await jose.jwtVerify(token, secret);
 
-    // Add the userId to the request headers
+    console.log({ payload });
+
     const requestHeaders = new Headers(request.headers);
     requestHeaders.set("X-User-ID", payload.userId as string);
 

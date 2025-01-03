@@ -8,6 +8,8 @@ import { useTaskStore, Task } from "@/store/task.store";
 import React from "react";
 import { toast } from "react-toastify";
 import { useWebSocket } from "@/app/context/WebSocketContext";
+import mongoose from "mongoose";
+import { ITask } from "@/models/task.model";
 
 const ImportVerification = () => {
   const router = useRouter();
@@ -35,18 +37,23 @@ const ImportVerification = () => {
         addTask(task);
       });
 
+      const tasksToSave = tasksToImport.map((task) => ({
+        ...task,
+        _id: new mongoose.Types.ObjectId(),
+      }));
+
       const response = await fetch("/api/task/bulk", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(tasksToImport),
+        body: JSON.stringify(tasksToSave),
         credentials: "include",
       });
 
       sendMessage({
         endpoint: "import-tasks",
-        data: tasksToImport,
+        data: tasksToSave,
       });
 
       if (!response.ok) {

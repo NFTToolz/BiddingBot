@@ -713,7 +713,10 @@ const TaskModal: React.FC<TaskModalProps> = ({
                 setFormState={setFormState}
               />
             ) : null}
-            <StopOption formState={formState} setFormState={setFormState} />
+
+            {false && (
+              <StopOption formState={formState} setFormState={setFormState} />
+            )}
             <StartSection formState={formState} setFormState={setFormState} />
           </div>
         </div>
