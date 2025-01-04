@@ -14,7 +14,7 @@ const SignUp = () => {
   const handleCreateUser = async () => {
     try {
       await createUser();
-      router.push("/dashboard/tasks");
+      router.push("/dashboard");
     } catch (error) {
       // Handle any errors here if needed
       console.error("Error creating user:", error);

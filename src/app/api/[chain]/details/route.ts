@@ -350,7 +350,7 @@ function transformOpenseaTrait(actualData: any) {
     categories: {},
     counts: {},
   };
-  actualData.data.collection.stringTraits.forEach((trait: any) => {
+  actualData?.data?.collection?.stringTraits?.forEach((trait: any) => {
     result.categories[trait.key] = "string";
     result.counts[trait.key] = {};
     trait.counts.forEach((item: any) => {
@@ -359,26 +359,6 @@ function transformOpenseaTrait(actualData: any) {
   });
 
   return result;
-}
-
-async function getOpenseaTraits(collectionSlug: string) {
-  try {
-    const response = await fetch(
-      `https://api.nfttools.website/opensea/api/v2/traits/${collectionSlug}`,
-      {
-        headers: {
-          accept: "application/json",
-          "X-NFT-API-Key": NEXT_PUBLIC_API_KEY,
-        },
-      }
-    );
-
-    if (!response.ok) return;
-    const data = await response.json();
-    return data;
-  } catch (error) {
-    console.error("Error fetching collection traits:", error);
-  }
 }
 
 export interface BlurFloorPriceResponse {

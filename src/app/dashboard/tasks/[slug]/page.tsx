@@ -190,7 +190,7 @@ export default function Page({ params }: { params: { slug: string } }) {
       </div>
       <div className="my-4">
         <Link
-          href="/dashboard/tasks"
+          href="/dashboard"
           className="text-Brand/Brand-1 underline font-semibold"
         >
           Back to Tasks

@@ -24,7 +24,7 @@ const ImportVerification = () => {
   // Redirect if no imported tasks
   useEffect(() => {
     if (!importedTasks.length) {
-      router.push("/dashboard/tasks");
+      router.push("/dashboard");
     }
   }, [importedTasks, router]);
 
@@ -62,7 +62,7 @@ const ImportVerification = () => {
 
       clearImportedTasks();
       toast.success("Tasks imported successfully!");
-      router.push("/dashboard/tasks");
+      router.push("/dashboard");
     } catch (error) {
       console.error("Failed to save imported tasks:", error);
     }
@@ -70,7 +70,7 @@ const ImportVerification = () => {
 
   const handleCancelImport = () => {
     clearImportedTasks();
-    router.push("/dashboard/tasks");
+    router.push("/dashboard");
   };
 
   const closeModal = () => {

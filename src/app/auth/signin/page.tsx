@@ -13,7 +13,7 @@ const SignIn = () => {
 
   const handleLogin = async () => {
     await login();
-    router.push("/dashboard/tasks");
+    router.push("/dashboard");
   };
 
   return (

@@ -9,7 +9,6 @@ export default function AuthLayout({
   return (
     <main className="bg-Neutral/Neutral-Border-[night]">
       <Suspense>
-        <Header />
         <div className="flex items-center justify-center min-h-screen">
           <div
             className=" bg-Neutral-BG-[night]
