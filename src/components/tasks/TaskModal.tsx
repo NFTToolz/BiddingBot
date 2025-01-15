@@ -523,111 +523,114 @@ const TaskModal: React.FC<TaskModalProps> = ({
 
   // Update the useEffect
   useEffect(() => {
-    if (
-      Object.keys(formState.selectedTraits).length === 0 ||
-      (taskId && isEqual(formState.selectedTraits, initialTask?.selectedTraits))
-    ) {
+    // Add a ref to track if we should fetch tokens
+    const shouldFetchTokens =
+      formState.bidType === "token" &&
+      Object.keys(formState.selectedTraits).length > 0 &&
+      (!taskId ||
+        !isEqual(formState.selectedTraits, initialTask?.selectedTraits));
+
+    if (!shouldFetchTokens) {
       setIsFetchingTokens(false);
       return;
     }
 
+    let isSubscribed = true; // Add cleanup flag
+
     const fetchNFTsWithTraits = async () => {
-      if (
-        formState.bidType === "token" &&
-        Object.keys(formState.selectedTraits).length > 0
-      ) {
-        setIsFetchingTokens(true);
+      setIsFetchingTokens(true);
 
-        const attributesForQuery: Record<string, string[]> = {};
-        Object.entries(formState.selectedTraits).forEach(
-          ([category, traits]) => {
-            attributesForQuery[category] = traits.map((trait) => trait.name);
-          }
-        );
+      const attributesForQuery: Record<string, string[]> = {};
+      Object.entries(formState.selectedTraits).forEach(([category, traits]) => {
+        attributesForQuery[category] = traits.map((trait) => trait.name);
+      });
 
-        const queryParams: MagicEdenQueryParams = {
-          excludeSpam: true,
-          excludeBurnt: true,
-          collection: formState.contract.contractAddress,
-          attributes: attributesForQuery,
-          excludeSources: ["nftx.io", "sudoswap.xyz"],
-          limit: 50,
-        };
+      const queryParams: MagicEdenQueryParams = {
+        excludeSpam: true,
+        excludeBurnt: true,
+        collection: formState.contract.contractAddress,
+        attributes: attributesForQuery,
+        excludeSources: ["nftx.io", "sudoswap.xyz"],
+        limit: 50,
+      };
 
-        try {
-          let allTokenIds: number[] = [];
-          let continuation = "";
+      try {
+        let allTokenIds: number[] = [];
+        let continuation = "";
 
-          do {
-            const { data } = await axios.get<TokenResponse>(
-              "https://api.nfttools.website/magiceden/v3/rtp/ethereum/tokens/v7",
-              {
-                headers: { "X-NFT-API-Key": NEXT_PUBLIC_API_KEY },
-                params: {
-                  ...queryParams,
-                  ...(continuation && { continuation }),
-                },
-                paramsSerializer: (params) => {
-                  const searchParams = new URLSearchParams();
+        do {
+          if (!isSubscribed) return; // Check if component is still mounted
 
-                  Object.entries(params).forEach(([key, value]) => {
-                    if (key === "attributes") {
-                      Object.entries(value as Record<string, string[]>).forEach(
-                        ([attr, values]) => {
-                          values.forEach((val) => {
-                            searchParams.append(`attributes[${attr}]`, val);
-                          });
-                        }
-                      );
-                    } else if (key === "excludeSources") {
-                      (value as string[]).forEach((source: string) => {
-                        searchParams.append(key, source);
-                      });
-                    } else if (value) {
-                      searchParams.append(key, String(value));
-                    }
-                  });
-                  return searchParams.toString();
-                },
-              }
-            );
+          const { data } = await axios.get<TokenResponse>(
+            "https://api.nfttools.website/magiceden/v3/rtp/ethereum/tokens/v7",
+            {
+              headers: { "X-NFT-API-Key": NEXT_PUBLIC_API_KEY },
+              params: {
+                ...queryParams,
+                ...(continuation && { continuation }),
+              },
+              paramsSerializer: (params) => {
+                const searchParams = new URLSearchParams();
 
-            const newTokenIds =
-              data && data.tokens && data.tokens.length > 0
-                ? data.tokens.map((token) => +token.token.tokenId)
-                : [];
-            allTokenIds = [...allTokenIds, ...newTokenIds];
-            continuation = data.continuation || "";
-          } while (
-            continuation &&
-            Object.keys(formState.selectedTraits).length > 0
+                Object.entries(params).forEach(([key, value]) => {
+                  if (key === "attributes") {
+                    Object.entries(value as Record<string, string[]>).forEach(
+                      ([attr, values]) => {
+                        values.forEach((val) => {
+                          searchParams.append(`attributes[${attr}]`, val);
+                        });
+                      }
+                    );
+                  } else if (key === "excludeSources") {
+                    (value as string[]).forEach((source: string) => {
+                      searchParams.append(key, source);
+                    });
+                  } else if (value) {
+                    searchParams.append(key, String(value));
+                  }
+                });
+                return searchParams.toString();
+              },
+            }
           );
 
-          console.log(`Total tokens found: ${allTokenIds.length}`);
+          const newTokenIds =
+            data?.tokens?.map((token) => +token.token.tokenId) || [];
+          allTokenIds = [...allTokenIds, ...newTokenIds];
+          continuation = data.continuation || "";
+        } while (continuation && isSubscribed);
 
+        if (isSubscribed) {
           if (allTokenIds.length > 0) {
             setTokenIdInput(allTokenIds.join(", "));
+            setFormState((prev) => ({
+              ...prev,
+              tokenIds: allTokenIds,
+            }));
           }
-
-          setFormState((prev) => ({
-            ...prev,
-            tokenIds: allTokenIds,
-          }));
-        } catch (error) {
-          console.error("Error fetching NFTs:", error);
+        }
+      } catch (error) {
+        console.error("Error fetching NFTs:", error);
+        if (isSubscribed) {
           toast.error("Failed to fetch NFTs with selected traits");
-        } finally {
+        }
+      } finally {
+        if (isSubscribed) {
           setIsFetchingTokens(false);
         }
       }
     };
 
     fetchNFTsWithTraits();
+
+    // Cleanup function
+    return () => {
+      isSubscribed = false;
+    };
   }, [
     formState.selectedTraits,
     formState.bidType,
     formState.contract.contractAddress,
-    setFormState,
     taskId,
     initialTask?.selectedTraits,
   ]);

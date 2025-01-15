@@ -1,8 +1,9 @@
 import ChevronDown from "@/assets/svg/ChevronDown";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useWalletStore } from "@/store/wallet.store";
 import { toast } from "react-toastify";
 import DeleteIcon from "@/assets/svg/DeleteIcon";
+import { isEqual } from "lodash";
 
 export type CustomSelectOption = {
   value: string;
@@ -34,6 +35,8 @@ const CustomSelect = ({
   const [enrichedOptions, setEnrichedOptions] = useState(options);
   const deleteWallet = useWalletStore((state) => state.deleteWallet);
 
+  const isFetchingRef = useRef(false);
+
   useEffect(() => {
     const fetchBalances = async (address: string) => {
       try {
@@ -55,6 +58,9 @@ const CustomSelect = ({
     };
 
     const updateOptionsWithBalances = async () => {
+      if (isFetchingRef.current) return;
+      isFetchingRef.current = true;
+
       const updatedOptions = await Promise.all(
         options.map(async (option) => {
           if (!option.address) return option;
@@ -70,9 +76,16 @@ const CustomSelect = ({
       );
 
       setEnrichedOptions(updatedOptions);
+      isFetchingRef.current = false;
     };
 
-    updateOptionsWithBalances();
+    if (!isEqual(options, enrichedOptions)) {
+      updateOptionsWithBalances();
+    }
+
+    return () => {
+      isFetchingRef.current = false;
+    };
   }, [options]);
 
   const handleDeleteWallet = async (e: React.MouseEvent, walletId: string) => {

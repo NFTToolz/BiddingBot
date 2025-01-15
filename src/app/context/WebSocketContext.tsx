@@ -31,6 +31,7 @@ export const useWebSocket = () => useContext(WebSocketContext);
 
 export function WebSocketProvider({ children }: { children: React.ReactNode }) {
   const ws = useRef<WebSocket | null>(null);
+  const retryIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const [isConnected, setIsConnected] = useState(false);
   const [taskLockData, setTaskLockData] = useState<any>(null);
   const [bidStats, setBidStats] = useState<BidStats | null>(null);
@@ -98,8 +99,27 @@ export function WebSocketProvider({ children }: { children: React.ReactNode }) {
   }, [connect]);
 
   useEffect(() => {
+    if (isConnected) {
+      retryIntervalRef.current = setInterval(() => {
+        if (ws.current?.readyState === WebSocket.OPEN) {
+          ws.current.send(JSON.stringify({ endpoint: "retry-connection" }));
+        }
+      }, 30000);
+    }
+
+    return () => {
+      if (retryIntervalRef.current) {
+        clearInterval(retryIntervalRef.current);
+      }
+    };
+  }, [isConnected]);
+
+  useEffect(() => {
     connect();
     return () => {
+      if (retryIntervalRef.current) {
+        clearInterval(retryIntervalRef.current);
+      }
       ws.current?.close();
     };
   }, [connect]);
