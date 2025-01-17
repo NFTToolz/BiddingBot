@@ -10,7 +10,6 @@ import { toast } from "react-toastify";
 import { MergedTask } from "@/app/dashboard/tasks/page";
 import { BidStats } from "@/app/context/WebSocketContext";
 import useSWR from "swr";
-import axios from "axios";
 import DeleteModal from "@/components/tasks/DeleteTaskModal";
 
 const GENERAL_BID_PRICE = "GENERAL_BID_PRICE";
@@ -33,21 +32,16 @@ const getMarketplaceUrls = (slug: string) => ({
   magiceden: `https://magiceden.io/collections/ethereum/${slug}`,
 });
 
-const axiosInstance = axios.create();
-
-interface CollectionStats {
-  total: {
-    floor_price: number;
-  };
-}
-
 const fetchFloorPrice = async (slug: string, contractAddress: string) => {
   try {
-    const { data } = await axiosInstance.get<{
+    const response = await fetch(
+      `/api/ethereum/details?slug=${slug}&address=${contractAddress}`
+    );
+    const data = (await response.json()) as {
       blurFloorPrice: number;
       openseaFloorPrice: number;
       magicedenFloorPrice: number;
-    }>(`/api/ethereum/details?slug=${slug}&address=${contractAddress}`);
+    };
 
     const { blurFloorPrice, openseaFloorPrice, magicedenFloorPrice } = data;
 
@@ -186,7 +180,7 @@ const TaskTable: React.FC<TaskTableProps> = ({
       > = {};
       for (const { slug, contractAddress } of runningTaskSlugs) {
         const price = await fetchFloorPrice(slug, contractAddress);
-        if (price !== null) {
+        if (price !== null && price !== undefined) {
           prices[slug] = price;
         }
       }
@@ -205,7 +199,7 @@ const TaskTable: React.FC<TaskTableProps> = ({
       {isVerificationMode ? null : (
         <>
           <div className="flex my-4 gap-4 text-sm">
-            <p>Active Bids</p>
+            <p>Bid Stats</p>
             {["opensea", "blur", "magiceden"].map((marketplace, index) => (
               <div className="flex gap-2 items-center" key={index}>
                 <div
@@ -330,7 +324,7 @@ const TaskTable: React.FC<TaskTableProps> = ({
                 {isVerificationMode ? null : (
                   <>
                     <th scope="col" className="px-3 py-3 text-center w-[180px]">
-                      Active Bids
+                      Bid Stats
                     </th>
 
                     <th scope="col" className="px-3 py-3 text-center w-[180px]">

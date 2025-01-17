@@ -155,6 +155,8 @@ export interface BidStats {
   bidCounts: BidCounts;
   skipCounts: BidCounts;
   errorCounts: BidCounts;
+  floorPrices: BidCounts;
+  bestOffers: BidCounts;
 }
 
 export interface BidRates {

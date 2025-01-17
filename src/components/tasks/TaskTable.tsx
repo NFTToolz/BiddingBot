@@ -10,62 +10,15 @@ import { toast } from "react-toastify";
 import DeleteModal from "./DeleteTaskModal";
 import { MergedTask } from "@/app/dashboard/tasks/page";
 import { BidStats } from "@/app/context/WebSocketContext";
-import useSWR from "swr";
-import axios from "axios";
 
 const GENERAL_BID_PRICE = "GENERAL_BID_PRICE";
 const MARKETPLACE_BID_PRICE = "MARKETPLACE_BID_PRICE";
-const MOCK_FLOOR_PRICES = {
-  opensea: 1.25,
-  blur: 1.23,
-  magiceden: 1.27,
-};
-
-const MOCK_BEST_OFFERS = {
-  opensea: 1.15,
-  blur: 1.18,
-  magiceden: 1.2,
-};
 
 const getMarketplaceUrls = (slug: string) => ({
   opensea: `https://opensea.io/collection/${slug}`,
   blur: `https://blur.io/collection/${slug}`,
   magiceden: `https://magiceden.io/collections/ethereum/${slug}`,
 });
-
-const API_KEY = process.env.NEXT_PUBLIC_API_KEY;
-const axiosInstance = axios.create();
-
-interface CollectionStats {
-  total: {
-    floor_price: number;
-  };
-}
-
-const fetchFloorPrice = async (slug: string, contractAddress: string) => {
-  try {
-    const { data } = await axiosInstance.get<{
-      blurFloorPrice: number;
-      openseaFloorPrice: number;
-      magicedenFloorPrice: number;
-    }>(`/api/ethereum/details?slug=${slug}&address=${contractAddress}`);
-
-    const { blurFloorPrice, openseaFloorPrice, magicedenFloorPrice } = data;
-
-    console.log({
-      slug,
-      contractAddress,
-      blurFloorPrice,
-      openseaFloorPrice,
-      magicedenFloorPrice,
-    });
-
-    return { blurFloorPrice, openseaFloorPrice, magicedenFloorPrice };
-  } catch (error) {
-    console.error(`Error fetching floor price for ${slug}:`, error);
-    return null;
-  }
-};
 
 const TaskTable: React.FC<TaskTableProps> = ({
   selectedTasks,
@@ -173,40 +126,14 @@ const TaskTable: React.FC<TaskTableProps> = ({
     [tasks]
   );
 
-  // Fetch floor prices for running tasks
-  const { data: floorPrices } = useSWR(
-    runningTaskSlugs.length > 0 ? ["floorPrices", runningTaskSlugs] : null,
-    async () => {
-      const prices: Record<
-        string,
-        {
-          blurFloorPrice: number;
-          openseaFloorPrice: number;
-          magicedenFloorPrice: number;
-        }
-      > = {};
-      for (const { slug, contractAddress } of runningTaskSlugs) {
-        const price = await fetchFloorPrice(slug, contractAddress);
-        if (price !== null) {
-          prices[slug] = price;
-        }
-      }
-      return prices;
-    },
-    {
-      refreshInterval: 5000, // Poll every 5 seconds
-      revalidateOnFocus: false,
-    }
-  );
-
-  console.log({ floorPrices });
+  console.log({ bidStats });
 
   return (
     <>
       {isVerificationMode ? null : (
         <>
           <div className="flex my-4 gap-4 text-sm">
-            <p>Active Bids</p>
+            <p>Bid Stats</p>
             {["opensea", "blur", "magiceden"].map((marketplace, index) => (
               <div className="flex gap-2 items-center" key={index}>
                 <div
@@ -331,27 +258,17 @@ const TaskTable: React.FC<TaskTableProps> = ({
                 {isVerificationMode ? null : (
                   <>
                     <th scope="col" className="px-3 py-3 text-center w-[180px]">
-                      Active Bids
-                    </th>
-
-                    <th scope="col" className="px-3 py-3 text-center w-[180px]">
-                      Skipped Bids
-                    </th>
-                    <th scope="col" className="px-3 py-3 text-center w-[180px]">
-                      Error Bids
+                      Bid Stats
                     </th>
                   </>
                 )}
+                <th scope="col" className="px-3 py-3 text-center w-[180px]">
+                  Bid Amount
+                </th>
                 <th scope="col" className="px-3 py-3 text-center w-[120px]">
                   Bid Type
                 </th>
 
-                <th scope="col" className="px-3 py-3 text-center w-[120px]">
-                  Min Price
-                </th>
-                <th scope="col" className="px-3 py-3 text-center w-[120px]">
-                  Max Price
-                </th>
                 <th scope="col" className="px-3 py-3 text-center w-[150px]">
                   <div className="flex items-center gap-2 justify-center">
                     <span>OS</span>
@@ -393,7 +310,7 @@ const TaskTable: React.FC<TaskTableProps> = ({
                 </th>
                 <th scope="col" className="px-3 py-3 text-center w-[150px]">
                   <div className="flex items-center gap-2 justify-center">
-                    <span>MagicEden</span>
+                    <span>ME</span>
                     <Toggle
                       checked={tasks.some((task) =>
                         task.selectedMarketplaces.includes("MagicEden")
@@ -427,6 +344,7 @@ const TaskTable: React.FC<TaskTableProps> = ({
             <tbody>
               {(isVerificationMode ? tasks : mergedTasks)?.map(
                 (task: Task | MergedTask) => {
+                  console.log({ task });
                   return (
                     <tr
                       key={task._id}
@@ -532,24 +450,29 @@ const TaskTable: React.FC<TaskTableProps> = ({
                                   <div className="flex gap-3">
                                     <span className="opacity-70">Floor:</span>
                                     <span>
-                                      {marketplaceKey === "opensea"
-                                        ? floorPrices?.[
-                                            task.contract.slug
-                                          ]?.openseaFloorPrice.toFixed(4) ||
-                                          "--"
-                                        : MOCK_FLOOR_PRICES[
-                                            marketplaceKey as keyof typeof MOCK_FLOOR_PRICES
-                                          ]}
+                                      {isMergedTask(task)
+                                        ? task.bidStats.floorPrices[task._id][
+                                            marketplace.toLowerCase() as
+                                              | "opensea"
+                                              | "blur"
+                                              | "magiceden"
+                                          ].toFixed(3)
+                                        : 0}{" "}
                                       Ξ
                                     </span>
                                     <span className="opacity-50">|</span>
                                     <span className="opacity-70">Best:</span>
                                     <span>
-                                      {
-                                        MOCK_BEST_OFFERS[
-                                          marketplaceKey as keyof typeof MOCK_BEST_OFFERS
-                                        ]
-                                      }
+                                      {isMergedTask(task)
+                                        ? task.bidStats.bestOffers?.[
+                                            task._id
+                                          ]?.[
+                                            marketplace.toLowerCase() as
+                                              | "opensea"
+                                              | "blur"
+                                              | "magiceden"
+                                          ].toFixed(3)
+                                        : 0}{" "}
                                       Ξ
                                     </span>
                                   </div>
@@ -562,7 +485,9 @@ const TaskTable: React.FC<TaskTableProps> = ({
 
                       {isVerificationMode ? null : (
                         <td className="px-3 py-4 text-center w-[500px]">
-                          <div className="mb-4">Hello World</div>
+                          <div className="mb-4 leading-6 opacity-0">
+                            Hellow World
+                          </div>
                           <div className="flex flex-col gap-2 text-sm">
                             {task.selectedMarketplaces.length > 0
                               ? task.selectedMarketplaces
@@ -655,8 +580,7 @@ const TaskTable: React.FC<TaskTableProps> = ({
                                                     | "blur"
                                                     | "magiceden"
                                                 ]
-                                              : 0}{" "}
-                                            / {total}
+                                              : 0}
                                           </span>
                                           <span className="opacity-50">|</span>
                                           <span className="opacity-70">
@@ -672,8 +596,7 @@ const TaskTable: React.FC<TaskTableProps> = ({
                                                     | "blur"
                                                     | "magiceden"
                                                 ]
-                                              : 0}{" "}
-                                            / {total}
+                                              : 0}
                                           </span>
                                         </div>
                                       </div>
@@ -683,58 +606,161 @@ const TaskTable: React.FC<TaskTableProps> = ({
                           </div>
                         </td>
                       )}
+                      <td className="px-3 py-4 text-center w-[180px]">
+                        <div className="mb-4 leading-6 opacity-0">
+                          Hello World
+                        </div>
+                        <div className="flex flex-col gap-2 text-sm">
+                          {task.selectedMarketplaces.length > 0
+                            ? task.selectedMarketplaces
+                                .sort()
+                                .map((marketplace) => {
+                                  const marketplaceKey =
+                                    marketplace.toLowerCase();
+                                  const floorPrice = isMergedTask(task)
+                                    ? task.bidStats.floorPrices[task._id][
+                                        marketplace.toLowerCase() as
+                                          | "opensea"
+                                          | "blur"
+                                          | "magiceden"
+                                      ].toFixed(3)
+                                    : 0;
+
+                                  let minValue, maxValue;
+                                  let bidPrice;
+
+                                  if (task.bidPriceType === GENERAL_BID_PRICE) {
+                                    bidPrice = task.bidPrice;
+                                  } else if (
+                                    task.bidPriceType === MARKETPLACE_BID_PRICE
+                                  ) {
+                                    bidPrice = {
+                                      min: (
+                                        task[
+                                          `${marketplaceKey}BidPrice` as keyof typeof task
+                                        ] as {
+                                          min: number;
+                                          max: number;
+                                          minType: string;
+                                          maxType: string;
+                                        }
+                                      ).min,
+                                      max: (
+                                        task[
+                                          `${marketplaceKey}BidPrice` as keyof typeof task
+                                        ] as {
+                                          min: number;
+                                          max: number;
+                                          minType: string;
+                                          maxType: string;
+                                        }
+                                      ).max,
+                                      minType: (
+                                        task[
+                                          `${marketplaceKey}BidPrice` as keyof typeof task
+                                        ] as {
+                                          min: number;
+                                          max: number;
+                                          minType: string;
+                                          maxType: string;
+                                        }
+                                      ).minType,
+                                      maxType: (
+                                        task[
+                                          `${marketplaceKey}BidPrice` as keyof typeof task
+                                        ] as {
+                                          min: number;
+                                          max: number;
+                                          minType: string;
+                                          maxType: string;
+                                        }
+                                      ).maxType,
+                                    };
+                                  }
+
+                                  if (
+                                    bidPrice?.min &&
+                                    bidPrice?.minType === "percentage" &&
+                                    floorPrice
+                                  ) {
+                                    minValue = (
+                                      (+floorPrice * bidPrice.min) /
+                                      100
+                                    ).toFixed(4);
+                                  } else {
+                                    minValue = bidPrice?.min;
+                                  }
+
+                                  if (
+                                    bidPrice?.max &&
+                                    bidPrice?.maxType === "percentage" &&
+                                    floorPrice
+                                  ) {
+                                    maxValue = (
+                                      (+floorPrice * bidPrice.max) /
+                                      100
+                                    ).toFixed(4);
+                                  } else {
+                                    maxValue = bidPrice?.max;
+                                  }
+
+                                  return (
+                                    <div
+                                      key={`price-${marketplace}`}
+                                      className={`flex justify-between px-3 py-2 rounded ${
+                                        marketplaceKey === "opensea"
+                                          ? "bg-[#2081e2]/10"
+                                          : marketplaceKey === "blur"
+                                          ? "bg-[#FF8700]/10"
+                                          : "bg-[#e42575]/10"
+                                      }`}
+                                    >
+                                      <div
+                                        className={`mr-4 ${
+                                          marketplaceKey === "opensea"
+                                            ? "text-[#2081e2]"
+                                            : marketplaceKey === "blur"
+                                            ? "text-[#FF8700]"
+                                            : "text-[#e42575]"
+                                        }`}
+                                      >
+                                        {marketplace.toLowerCase() === "opensea"
+                                          ? "OS"
+                                          : marketplace.toLowerCase() ===
+                                            "magiceden"
+                                          ? "ME"
+                                          : marketplace}
+                                      </div>
+                                      <div className="flex gap-3">
+                                        <span className="opacity-70">Min:</span>
+                                        <span>
+                                          {minValue || "--"}
+                                          {bidPrice?.minType === "percentage" &&
+                                          !floorPrice
+                                            ? "%"
+                                            : "Ξ"}
+                                        </span>
+                                        <span className="opacity-50">|</span>
+                                        <span className="opacity-70">Max:</span>
+                                        <span>
+                                          {maxValue || "--"}
+                                          {bidPrice?.maxType === "percentage" &&
+                                          !floorPrice
+                                            ? "%"
+                                            : "Ξ"}
+                                        </span>
+                                      </div>
+                                    </div>
+                                  );
+                                })
+                            : "--"}
+                        </div>
+                      </td>
                       <td className="px-3 py-4 text-center w-[120px]">
                         {getBidType(task)}
                       </td>
-                      <td className="px-3 py-4 text-center w-[120px]">
-                        <div className="flex flex-col">
-                          {task.bidPrice.min &&
-                          task.bidPrice.minType &&
-                          task.bidPriceType === GENERAL_BID_PRICE ? (
-                            <span>
-                              {task.bidPrice.min}{" "}
-                              {task.bidPrice.minType === "percentage"
-                                ? "%"
-                                : "ETH".toUpperCase()}
-                            </span>
-                          ) : null}
-
-                          {task.openseaBidPrice.min &&
-                          task.openseaBidPrice.minType &&
-                          task.bidPriceType === MARKETPLACE_BID_PRICE ? (
-                            <span className="text-[#2081e2]">
-                              {task.openseaBidPrice.min}{" "}
-                              {task.openseaBidPrice.minType === "percentage"
-                                ? "%"
-                                : "WETH".toUpperCase()}
-                            </span>
-                          ) : null}
-
-                          {task.blurBidPrice.min &&
-                          task.blurBidPrice.minType &&
-                          task.bidPriceType === MARKETPLACE_BID_PRICE ? (
-                            <span className="text-[#FF8700]">
-                              {task.blurBidPrice.min}{" "}
-                              {task.blurBidPrice.minType === "percentage"
-                                ? "%"
-                                : "BETH".toUpperCase()}
-                            </span>
-                          ) : null}
-
-                          {task.magicEdenBidPrice.min &&
-                          task.magicEdenBidPrice.minType &&
-                          task.bidPriceType === MARKETPLACE_BID_PRICE ? (
-                            <span className="text-[#e42575]">
-                              {task.magicEdenBidPrice.min}{" "}
-                              {task.magicEdenBidPrice.minType === "percentage"
-                                ? "%"
-                                : "WETH".toUpperCase()}
-                            </span>
-                          ) : null}
-                        </div>
-                      </td>
                       <td className="px-3 py-4 text-center w-[100px]">
-                        <span className="sm:hidden font-bold">OpenSea</span>
+                        <span className="sm:hidden font-bold">OS</span>
                         <Toggle
                           checked={task.selectedMarketplaces.includes(
                             "OpenSea"
@@ -768,7 +794,7 @@ const TaskTable: React.FC<TaskTableProps> = ({
                         />
                       </td>
                       <td className="px-3 py-4 text-center w-[100px]">
-                        <span className="sm:hidden font-bold">MagicEden</span>
+                        <span className="sm:hidden font-bold">ME</span>
                         <Toggle
                           checked={task.selectedMarketplaces.includes(
                             "MagicEden"

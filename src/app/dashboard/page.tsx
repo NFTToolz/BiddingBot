@@ -135,6 +135,22 @@ const Tasks = () => {
               blur: 0,
             },
           },
+          floorPrices: {
+            [task._id]: (bidStats?.floorPrices &&
+              bidStats.floorPrices[task._id]) || {
+              opensea: 0,
+              magiceden: 0,
+              blur: 0,
+            },
+          },
+          bestOffers: {
+            [task._id]: (bidStats?.bestOffers &&
+              bidStats.bestOffers[task._id]) || {
+              opensea: 0,
+              magiceden: 0,
+              blur: 0,
+            },
+          },
           skipCounts: {
             [task._id]: (bidStats?.skipCounts &&
               bidStats.skipCounts[task._id]) || {
