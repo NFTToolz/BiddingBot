@@ -169,11 +169,28 @@ const FormSection: React.FC<FormSectionProps> = ({
     }));
   };
 
+  const getDecimalPrecision = (value: number) => {
+    if (value < 0.1) return 4;
+    if (value < 1) return 3;
+    return 2;
+  };
+
+  const formatToValidPrecision = (value: string) => {
+    const numValue = parseFloat(value);
+    if (isNaN(numValue)) return value;
+    const precision = getDecimalPrecision(numValue);
+    return numValue.toFixed(precision);
+  };
+
   const handleBidPriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     const priceType = name.split(".")[1];
-
     const priceCategory = name.split(".")[0];
+
+    // Validate input format
+    if (value !== "" && !/^\d*\.?\d{0,4}$/.test(value)) {
+      return;
+    }
 
     setFormState((prev) => ({
       ...prev,
@@ -183,6 +200,42 @@ const FormSection: React.FC<FormSectionProps> = ({
         [priceType]: value,
       },
     }));
+  };
+
+  const handleBidPriceBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    const priceType = name.split(".")[1];
+    const priceCategory = name.split(".")[0];
+
+    // Only format if it's ETH type and has a value
+    if (
+      ((priceCategory === "bidPrice" && formState.bidPrice.minType === "eth") ||
+        (priceCategory === "openseaBidPrice" &&
+          formState.openseaBidPrice.minType === "eth")) &&
+      value !== ""
+    ) {
+      let numValue = parseFloat(value);
+
+      // Enforce minimum value
+      if (numValue < 0.0001) {
+        numValue = 0.0001;
+      }
+
+      // Enforce maximum value
+      if (numValue > 1000000) {
+        numValue = 1000000;
+      }
+
+      const formattedValue = formatToValidPrecision(String(numValue));
+      setFormState((prev) => ({
+        ...prev,
+        [priceCategory]: {
+          // @ts-ignore
+          ...prev[priceCategory],
+          [priceType]: formattedValue,
+        },
+      }));
+    }
   };
 
   const handleBidDurationChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -453,18 +506,20 @@ const FormSection: React.FC<FormSectionProps> = ({
           </label>
           <div className="flex items-center">
             <input
-              min={0.005}
+              min={0.0001}
+              max={1000000}
               step={0.0001}
               inputMode="numeric"
               type="number"
               id="minPrice"
               name={"bidPrice.min"}
               onChange={handleBidPriceChange}
+              onBlur={handleBidPriceBlur}
               value={formState.bidPrice.min}
               placeholder={
                 formState.bidPrice.minType === "percentage" ? "10" : "0.1"
               }
-              className={`w-full p-3 rounded-l-lg border border-r-0 border-Neutral-BG-[night] bg-Neutral/Neutral-300-[night] `}
+              className={`w-full p-3 rounded-l-lg border border-r-0 border-Neutral-BG-[night] bg-Neutral/Neutral-300-[night]`}
               required
               autoComplete="off"
             />
@@ -498,13 +553,15 @@ const FormSection: React.FC<FormSectionProps> = ({
           </label>
           <div className="flex items-center">
             <input
-              min={0.005}
+              min={0.0001}
+              max={1000000}
               step={0.0001}
               inputMode="numeric"
               type="number"
               id="maxPrice"
               name={"bidPrice.max"}
               onChange={handleBidPriceChange}
+              onBlur={handleBidPriceBlur}
               value={formState.bidPrice.max}
               placeholder={
                 formState.bidPrice.maxType === "percentage" ? "80" : "1"
@@ -557,6 +614,7 @@ const FormSection: React.FC<FormSectionProps> = ({
               id="openseaMinPrice"
               name={"openseaBidPrice.min"}
               onChange={handleBidPriceChange}
+              onBlur={handleBidPriceBlur}
               value={formState.openseaBidPrice.min}
               placeholder={
                 formState.openseaBidPrice.minType === "percentage" ? "80" : "1"
@@ -625,6 +683,7 @@ const FormSection: React.FC<FormSectionProps> = ({
               id="openseaMaxPrice"
               name={"openseaBidPrice.max"}
               onChange={handleBidPriceChange}
+              onBlur={handleBidPriceBlur}
               value={formState.openseaBidPrice.max}
               placeholder={
                 formState.openseaBidPrice.maxType === "percentage" ? "80" : "1"
@@ -690,6 +749,7 @@ const FormSection: React.FC<FormSectionProps> = ({
               id="blurMinPrice"
               name={"blurBidPrice.min"}
               onChange={handleBidPriceChange}
+              onBlur={handleBidPriceBlur}
               value={formState.blurBidPrice.min}
               placeholder={
                 formState.blurBidPrice.minType === "percentage" ? "80" : "1"
@@ -752,6 +812,7 @@ const FormSection: React.FC<FormSectionProps> = ({
               id="blurMaxPrice"
               name={"blurBidPrice.max"}
               onChange={handleBidPriceChange}
+              onBlur={handleBidPriceBlur}
               value={formState.blurBidPrice.max}
               placeholder={
                 formState.blurBidPrice.maxType === "percentage" ? "80" : "1"
@@ -821,6 +882,7 @@ const FormSection: React.FC<FormSectionProps> = ({
               id="magicEdenMinPrice"
               name={"magicEdenBidPrice.min"}
               onChange={handleBidPriceChange}
+              onBlur={handleBidPriceBlur}
               value={formState.magicEdenBidPrice.min}
               placeholder={
                 formState.magicEdenBidPrice.minType === "percentage"
@@ -893,6 +955,7 @@ const FormSection: React.FC<FormSectionProps> = ({
               id="magicEdenMaxPrice"
               name={"magicEdenBidPrice.max"}
               onChange={handleBidPriceChange}
+              onBlur={handleBidPriceBlur}
               value={formState.magicEdenBidPrice.max}
               placeholder={
                 formState.magicEdenBidPrice.maxType === "percentage"

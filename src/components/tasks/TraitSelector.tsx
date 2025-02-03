@@ -50,9 +50,11 @@ const TraitSelector: React.FC<TraitSelectorProps> = ({
 
   const filteredTraits =
     selectedCategory && traits.counts[selectedCategory]
-      ? Object.entries(traits.counts[selectedCategory]).filter(([trait]) =>
-          trait.toLowerCase().includes(searchTerm.toLowerCase())
-        )
+      ? Object.entries(traits.counts[selectedCategory])
+          .filter(([trait]) =>
+            trait.toLowerCase().includes(searchTerm.toLowerCase())
+          )
+          .sort((a, b) => a[1].count - b[1].count)
       : [];
 
   const handleClickOutside = (event: MouseEvent) => {

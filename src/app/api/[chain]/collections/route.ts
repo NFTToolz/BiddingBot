@@ -11,18 +11,12 @@ export async function GET(request: NextRequest) {
     const response = await fetch(apiUrl, {
       headers: { "X-NFT-API-Key": NEXT_PUBLIC_API_KEY },
     });
-    if (!response.ok) {
-      throw new Error("Failed to fetch collection data");
-    }
-    const collection: CollectionData = await response.json();
 
+    const collection: CollectionData = await response.json();
     const data = {
       ...collection,
     };
-    if (
-      collection.total_supply > 0 &&
-      collection.contracts[0].chain.toLowerCase() === "ethereum"
-    ) {
+    if (collection.collection_offers_enabled) {
       return NextResponse.json(data, { status: 200 });
     } else {
       return NextResponse.json(

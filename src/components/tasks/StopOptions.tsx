@@ -24,7 +24,6 @@ const StopOption = ({ formState, setFormState }: IStopOption) => {
         newStopOptions.maxPurchase = null;
       }
 
-      // Ensure only one of pauseAllBids or stopAllBids can be true
       if (newStopOptions.pauseAllBids) {
         newStopOptions.stopAllBids = false;
       }
@@ -76,6 +75,7 @@ const StopOption = ({ formState, setFormState }: IStopOption) => {
               <div>
                 <label htmlFor="minFloorPrice" className="block text-sm mb-1">
                   Min Floor Price
+                  <span className="text-red-500">*</span>
                 </label>
                 <input
                   inputMode="numeric"
@@ -96,7 +96,7 @@ const StopOption = ({ formState, setFormState }: IStopOption) => {
                   value={formState.stopOptions.minFloorPrice?.toString()}
                   placeholder="0.0001"
                   className={`w-full p-3 rounded-lg border border-Neutral-BG-[night] bg-Neutral/Neutral-300-[night] `}
-                  required
+                  required={formState.stopOptions.triggerStopOptions}
                   autoComplete="off"
                 />
               </div>
@@ -109,7 +109,6 @@ const StopOption = ({ formState, setFormState }: IStopOption) => {
                   type="number"
                   id="maxFloorPrice"
                   step={0.0001}
-                  min={0.0001}
                   name="maxFloorPrice"
                   onChange={(e) =>
                     setFormState((prev) => ({
@@ -123,81 +122,78 @@ const StopOption = ({ formState, setFormState }: IStopOption) => {
                   value={formState.stopOptions.maxFloorPrice?.toString()}
                   placeholder="0.0001"
                   className={`w-full p-3 rounded-lg border border-Neutral-BG-[night] bg-Neutral/Neutral-300-[night] `}
-                  required
                   autoComplete="off"
                 />
               </div>
             </div>
 
-            {Object.keys(formState.selectedTraits).length > 0 ? (
-              <>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                  <div>
-                    <label
-                      htmlFor="minTraitPrice"
-                      className="block text-sm mb-1"
-                    >
-                      Min Trait Price
-                    </label>
-                    <input
-                      inputMode="numeric"
-                      type="number"
-                      id="minTraitPrice"
-                      name="minTraitPrice"
-                      step={0.0001}
-                      min={0.0001}
-                      onChange={(e) =>
-                        setFormState((prev) => ({
-                          ...prev,
-                          stopOptions: {
-                            ...prev.stopOptions,
-                            minTraitPrice: e.target.value,
-                          },
-                        }))
-                      }
-                      value={formState.stopOptions.minTraitPrice?.toString()}
-                      placeholder="0.0001"
-                      className={`w-full p-3 rounded-lg border border-Neutral-BG-[night] bg-Neutral/Neutral-300-[night] `}
-                      required
-                      autoComplete="off"
-                    />
-                  </div>
-                  <div>
-                    <label
-                      htmlFor="maxTraitPrice"
-                      className="block text-sm mb-1"
-                    >
-                      Max Trait Price
-                    </label>
-                    <input
-                      inputMode="numeric"
-                      type="number"
-                      id="maxTraitPrice"
-                      name="maxTraitPrice"
-                      step={0.0001}
-                      min={0.0001}
-                      onChange={(e) =>
-                        setFormState((prev) => ({
-                          ...prev,
-                          stopOptions: {
-                            ...prev.stopOptions,
-                            maxTraitPrice: e.target.value,
-                          },
-                        }))
-                      }
-                      value={formState.stopOptions.maxTraitPrice?.toString()}
-                      placeholder="0.0001"
-                      className={`w-full p-3 rounded-lg border border-Neutral-BG-[night] bg-Neutral/Neutral-300-[night] `}
-                      required
-                      autoComplete="off"
-                    />
-                  </div>
-                </div>
-              </>
-            ) : (
-              <></>
-            )}
-
+            {/* {Object.keys(formState.selectedTraits).length > 0 ? (
+							<>
+								<div className='grid grid-cols-1 md:grid-cols-2 gap-2'>
+									<div>
+										<label
+											htmlFor='minTraitPrice'
+											className='block text-sm mb-1'>
+											Min Trait Price
+										</label>
+										<input
+											inputMode='numeric'
+											type='number'
+											id='minTraitPrice'
+											name='minTraitPrice'
+											step={0.0001}
+											min={0.0001}
+											onChange={(e) =>
+												setFormState((prev) => ({
+													...prev,
+													stopOptions: {
+														...prev.stopOptions,
+														minTraitPrice: e.target.value,
+													},
+												}))
+											}
+											value={formState.stopOptions.minTraitPrice?.toString()}
+											placeholder='0.0001'
+											className={`w-full p-3 rounded-lg border border-Neutral-BG-[night] bg-Neutral/Neutral-300-[night] `}
+											required
+											autoComplete='off'
+										/>
+									</div>
+									<div>
+										<label
+											htmlFor='maxTraitPrice'
+											className='block text-sm mb-1'>
+											Max Trait Price
+										</label>
+										<input
+											inputMode='numeric'
+											type='number'
+											id='maxTraitPrice'
+											name='maxTraitPrice'
+											step={0.0001}
+											min={0.0001}
+											onChange={(e) =>
+												setFormState((prev) => ({
+													...prev,
+													stopOptions: {
+														...prev.stopOptions,
+														maxTraitPrice: e.target.value,
+													},
+												}))
+											}
+											value={formState.stopOptions.maxTraitPrice?.toString()}
+											placeholder='0.0001'
+											className={`w-full p-3 rounded-lg border border-Neutral-BG-[night] bg-Neutral/Neutral-300-[night] `}
+											required
+											autoComplete='off'
+										/>
+									</div>
+								</div>
+							</>
+						) : (
+							<></>
+						)} */}
+            {/* 
             <div>
               <label htmlFor="maxPurchase" className="block text-sm mb-1">
                 Maximum Purchase
@@ -224,7 +220,7 @@ const StopOption = ({ formState, setFormState }: IStopOption) => {
                 required
                 autoComplete="off"
               />
-            </div>
+            </div> */}
           </div>
         </div>
       ) : (

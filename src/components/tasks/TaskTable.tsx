@@ -14,10 +14,19 @@ import { BidStats } from "@/app/context/WebSocketContext";
 const GENERAL_BID_PRICE = "GENERAL_BID_PRICE";
 const MARKETPLACE_BID_PRICE = "MARKETPLACE_BID_PRICE";
 
-const getMarketplaceUrls = (slug: string) => ({
-  opensea: `https://opensea.io/collection/${slug}`,
-  blur: `https://blur.io/collection/${slug}`,
-  magiceden: `https://magiceden.io/collections/ethereum/${slug}`,
+const getMarketplaceUrls = (slug: string, bidType: string) => ({
+  opensea:
+    bidType === "COLLECTION"
+      ? `https://opensea.io/collection/${slug}/offers`
+      : `https://opensea.io/collection/${slug}/activity?activityTypes=${
+          bidType === "TOKEN"
+            ? "offer"
+            : bidType === "TRAIT"
+            ? "trait_offer"
+            : "collection_offer"
+        }`,
+  blur: `https://blur.io/collection/${slug}/bids`,
+  magiceden: `https://magiceden.io/collections/ethereum/${slug}?activeTab=offers`,
 });
 
 const TaskTable: React.FC<TaskTableProps> = ({
@@ -255,75 +264,88 @@ const TaskTable: React.FC<TaskTableProps> = ({
                   Slug
                 </th>
 
-                {isVerificationMode ? null : (
-                  <>
-                    <th scope="col" className="px-3 py-3 text-center w-[180px]">
-                      Bid Stats
-                    </th>
-                  </>
-                )}
                 <th scope="col" className="px-3 py-3 text-center w-[180px]">
                   Bid Amount
                 </th>
+                {isVerificationMode ? null : (
+                  <>
+                    <th scope="col" className="px-3 py-3 text-center w-[250px]">
+                      <div className="flex flex-col gap-3">
+                        <span className="text-sm font-medium">
+                          Bid Stats & Status
+                        </span>
+                        <div className="flex items-center justify-center gap-4 bg-[#2A2B32] p-2 rounded-lg">
+                          {["opensea", "blur", "magiceden"].map(
+                            (marketplace) => (
+                              <div
+                                key={marketplace}
+                                className="flex items-center gap-2"
+                              >
+                                <div
+                                  className={`w-2 h-2 rounded-full ${
+                                    marketplace === "opensea"
+                                      ? "bg-[#2081e2]"
+                                      : marketplace === "blur"
+                                      ? "bg-[#FF8700]"
+                                      : "bg-[#e42575]"
+                                  }`}
+                                ></div>
+                                <span
+                                  className={`text-xs ${
+                                    marketplace === "opensea"
+                                      ? "text-[#2081e2]"
+                                      : marketplace === "blur"
+                                      ? "text-[#FF8700]"
+                                      : "text-[#e42575]"
+                                  }`}
+                                >
+                                  {marketplace === "opensea"
+                                    ? "OS"
+                                    : marketplace === "magiceden"
+                                    ? "ME"
+                                    : "Blur"}
+                                </span>
+                                <Toggle
+                                  checked={tasks.some((task) =>
+                                    task.selectedMarketplaces.includes(
+                                      marketplace === "opensea"
+                                        ? "OpenSea"
+                                        : marketplace === "magiceden"
+                                        ? "MagicEden"
+                                        : "Blur"
+                                    )
+                                  )}
+                                  onChange={() => {
+                                    tasks.forEach((task) => {
+                                      onToggleMarketplace(
+                                        task._id,
+                                        marketplace === "opensea"
+                                          ? "OpenSea"
+                                          : marketplace === "magiceden"
+                                          ? "MagicEden"
+                                          : "Blur"
+                                      );
+                                    });
+                                  }}
+                                  activeColor={
+                                    marketplace === "opensea"
+                                      ? "#2081e2"
+                                      : marketplace === "blur"
+                                      ? "#FF8700"
+                                      : "#e42575"
+                                  }
+                                  inactiveColor="#3F3F46"
+                                />
+                              </div>
+                            )
+                          )}
+                        </div>
+                      </div>
+                    </th>
+                  </>
+                )}
                 <th scope="col" className="px-3 py-3 text-center w-[120px]">
                   Bid Type
-                </th>
-
-                <th scope="col" className="px-3 py-3 text-center w-[150px]">
-                  <div className="flex items-center gap-2 justify-center">
-                    <span>OS</span>
-                    <Toggle
-                      checked={tasks.some((task) =>
-                        task.selectedMarketplaces.includes("OpenSea")
-                      )}
-                      onChange={() => {
-                        tasks.forEach((task) => {
-                          onToggleMarketplace(task._id, "OpenSea");
-                        });
-                      }}
-                      activeColor="#2081e2"
-                      inactiveColor="#3F3F46"
-                    />
-                  </div>
-                </th>
-                <th scope="col" className="px-3 py-3 text-center w-[150px]">
-                  <div className="flex items-center gap-2 justify-center">
-                    <span>Blur</span>
-                    <Toggle
-                      checked={tasks.some((task) =>
-                        task.selectedMarketplaces.includes("Blur")
-                      )}
-                      onChange={() => {
-                        tasks.forEach((task) => {
-                          if (
-                            !task.selectedMarketplaces.includes("Blur") &&
-                            (!task.blurValid || task.bidType === "token")
-                          )
-                            return;
-                          onToggleMarketplace(task._id, "Blur");
-                        });
-                      }}
-                      activeColor="#FF8700"
-                      inactiveColor="#3F3F46"
-                    />
-                  </div>
-                </th>
-                <th scope="col" className="px-3 py-3 text-center w-[150px]">
-                  <div className="flex items-center gap-2 justify-center">
-                    <span>ME</span>
-                    <Toggle
-                      checked={tasks.some((task) =>
-                        task.selectedMarketplaces.includes("MagicEden")
-                      )}
-                      onChange={() => {
-                        tasks.forEach((task) => {
-                          onToggleMarketplace(task._id, "MagicEden");
-                        });
-                      }}
-                      activeColor="#e42575"
-                      inactiveColor="#3F3F46"
-                    />
-                  </div>
                 </th>
                 <th scope="col" className="px-3 py-3 text-center w-[100px]">
                   Tags
@@ -401,7 +423,9 @@ const TaskTable: React.FC<TaskTableProps> = ({
                               const urls = getMarketplaceUrls(
                                 marketplaceKey === "magiceden"
                                   ? task.contract.contractAddress
-                                  : task.contract.slug
+                                  : task.contract.slug,
+
+                                getBidType(task)
                               );
                               return (
                                 <Link
@@ -482,141 +506,19 @@ const TaskTable: React.FC<TaskTableProps> = ({
                           </div>
                         </div>
                       </td>
-
-                      {isVerificationMode ? null : (
-                        <td className="px-3 py-4 text-center w-[500px]">
-                          <div className="mb-4 leading-6 opacity-0">
-                            Hellow World
-                          </div>
-                          <div className="flex flex-col gap-2 text-sm">
-                            {task.selectedMarketplaces.length > 0
-                              ? task.selectedMarketplaces
-                                  .sort()
-                                  .map((marketplace) =>
-                                    marketplace.toLowerCase()
-                                  )
-                                  .map((marketplace, index) => {
-                                    const total =
-                                      task.bidType === "collection" &&
-                                      Object.keys(task?.selectedTraits || {})
-                                        .length == 0
-                                        ? 1
-                                        : Object.keys(
-                                            task?.selectedTraits || {}
-                                          ).length > 0
-                                        ? Object.values(
-                                            task.selectedTraits
-                                          ).reduce(
-                                            (acc: number, curr: any[]) => {
-                                              return (
-                                                acc +
-                                                curr.filter((trait) =>
-                                                  trait.availableInMarketplaces
-                                                    .map((m: any) =>
-                                                      m.toLowerCase()
-                                                    )
-                                                    .includes(marketplace)
-                                                ).length
-                                              );
-                                            },
-                                            0
-                                          )
-                                        : task.tokenIds?.length || 1;
-
-                                    return (
-                                      <div
-                                        key={`bids-${marketplace}`}
-                                        className={`flex justify-between px-3 py-2 rounded ${
-                                          marketplace === "opensea"
-                                            ? "bg-[#2081e2]/10"
-                                            : marketplace === "blur"
-                                            ? "bg-[#FF8700]/10"
-                                            : "bg-[#e42575]/10"
-                                        }`}
-                                      >
-                                        <div
-                                          className={`${
-                                            marketplace === "opensea"
-                                              ? "text-[#2081e2]"
-                                              : marketplace === "blur"
-                                              ? "text-[#FF8700]"
-                                              : "text-[#e42575]"
-                                          }`}
-                                        >
-                                          {marketplace === "opensea"
-                                            ? "OS"
-                                            : marketplace === "magiceden"
-                                            ? "ME"
-                                            : marketplace}
-                                        </div>
-                                        <div className="flex gap-3">
-                                          <span className="opacity-70">
-                                            Active:
-                                          </span>
-                                          <span>
-                                            {isMergedTask(task)
-                                              ? task.bidStats.bidCounts[
-                                                  task._id
-                                                ][
-                                                  marketplace as
-                                                    | "opensea"
-                                                    | "blur"
-                                                    | "magiceden"
-                                                ]
-                                              : 0}{" "}
-                                            / {total}
-                                          </span>
-                                          <span className="opacity-50">|</span>
-                                          <span className="opacity-70">
-                                            Skip:
-                                          </span>
-                                          <span>
-                                            {isMergedTask(task)
-                                              ? task.bidStats.skipCounts[
-                                                  task._id
-                                                ][
-                                                  marketplace as
-                                                    | "opensea"
-                                                    | "blur"
-                                                    | "magiceden"
-                                                ]
-                                              : 0}
-                                          </span>
-                                          <span className="opacity-50">|</span>
-                                          <span className="opacity-70">
-                                            Error:
-                                          </span>
-                                          <span>
-                                            {isMergedTask(task)
-                                              ? task.bidStats.errorCounts[
-                                                  task._id
-                                                ][
-                                                  marketplace as
-                                                    | "opensea"
-                                                    | "blur"
-                                                    | "magiceden"
-                                                ]
-                                              : 0}
-                                          </span>
-                                        </div>
-                                      </div>
-                                    );
-                                  })
-                              : "--"}
-                          </div>
-                        </td>
-                      )}
                       <td className="px-3 py-4 text-center w-[180px]">
-                        <div className="mb-4 leading-6 opacity-0">
+                        <p className="mb-4 leading-6 opacity-0 text-sm underline">
                           Hello World
-                        </div>
+                        </p>
                         <div className="flex flex-col gap-2 text-sm">
                           {task.selectedMarketplaces.length > 0
                             ? task.selectedMarketplaces
                                 .sort()
                                 .map((marketplace) => {
                                   const marketplaceKey =
-                                    marketplace.toLowerCase();
+                                    marketplace.toLowerCase() === "magiceden"
+                                      ? "magicEden"
+                                      : marketplace.toLowerCase();
                                   const floorPrice = isMergedTask(task)
                                     ? task.bidStats.floorPrices[task._id][
                                         marketplace.toLowerCase() as
@@ -644,7 +546,7 @@ const TaskTable: React.FC<TaskTableProps> = ({
                                           minType: string;
                                           maxType: string;
                                         }
-                                      ).min,
+                                      )?.min,
                                       max: (
                                         task[
                                           `${marketplaceKey}BidPrice` as keyof typeof task
@@ -654,7 +556,7 @@ const TaskTable: React.FC<TaskTableProps> = ({
                                           minType: string;
                                           maxType: string;
                                         }
-                                      ).max,
+                                      )?.max,
                                       minType: (
                                         task[
                                           `${marketplaceKey}BidPrice` as keyof typeof task
@@ -664,7 +566,7 @@ const TaskTable: React.FC<TaskTableProps> = ({
                                           minType: string;
                                           maxType: string;
                                         }
-                                      ).minType,
+                                      )?.minType,
                                       maxType: (
                                         task[
                                           `${marketplaceKey}BidPrice` as keyof typeof task
@@ -674,7 +576,7 @@ const TaskTable: React.FC<TaskTableProps> = ({
                                           minType: string;
                                           maxType: string;
                                         }
-                                      ).maxType,
+                                      )?.maxType,
                                     };
                                   }
 
@@ -756,63 +658,153 @@ const TaskTable: React.FC<TaskTableProps> = ({
                             : "--"}
                         </div>
                       </td>
+
+                      {isVerificationMode ? null : (
+                        <td className="px-3 py-4 text-center w-[250px]">
+                          <p className="mb-4 leading-6 opacity-0 text-sm underline">
+                            Hello World
+                          </p>
+                          <div className="flex flex-col gap-3">
+                            {/* Marketplace Stats */}
+                            <div className="flex flex-col gap-2 text-sm">
+                              {["blur", "magiceden", "opensea"].map(
+                                (marketplace) => {
+                                  const isSelected =
+                                    task.selectedMarketplaces.includes(
+                                      marketplace === "opensea"
+                                        ? "OpenSea"
+                                        : marketplace === "magiceden"
+                                        ? "MagicEden"
+                                        : "Blur"
+                                    );
+
+                                  return (
+                                    <div
+                                      key={`stats-${marketplace}`}
+                                      className={`flex justify-between px-3 py-2 rounded ${
+                                        marketplace === "opensea"
+                                          ? "bg-[#2081e2]/10"
+                                          : marketplace === "blur"
+                                          ? "bg-[#FF8700]/10"
+                                          : "bg-[#e42575]/10"
+                                      }`}
+                                    >
+                                      <div className="flex items-center gap-2">
+                                        <div
+                                          className={`w-2 h-2 rounded-full ${
+                                            marketplace === "opensea"
+                                              ? "bg-[#2081e2]"
+                                              : marketplace === "blur"
+                                              ? "bg-[#FF8700]"
+                                              : "bg-[#e42575]"
+                                          }`}
+                                        />
+                                        <span
+                                          className={
+                                            marketplace === "opensea"
+                                              ? "text-[#2081e2]"
+                                              : marketplace === "blur"
+                                              ? "text-[#FF8700]"
+                                              : "text-[#e42575]"
+                                          }
+                                        >
+                                          {marketplace === "opensea"
+                                            ? "OS"
+                                            : marketplace === "magiceden"
+                                            ? "ME"
+                                            : marketplace}
+                                        </span>
+                                        <Toggle
+                                          checked={isSelected}
+                                          onChange={() => {
+                                            if (
+                                              marketplace === "blur" &&
+                                              !task.selectedMarketplaces.includes(
+                                                "Blur"
+                                              ) &&
+                                              (!task.blurValid ||
+                                                task.bidType === "token")
+                                            )
+                                              return;
+                                            onToggleMarketplace(
+                                              task._id,
+                                              marketplace === "opensea"
+                                                ? "OpenSea"
+                                                : marketplace === "magiceden"
+                                                ? "MagicEden"
+                                                : "Blur"
+                                            );
+                                          }}
+                                          activeColor={
+                                            marketplace === "opensea"
+                                              ? "#2081e2"
+                                              : marketplace === "blur"
+                                              ? "#FF8700"
+                                              : "#e42575"
+                                          }
+                                          inactiveColor="#3F3F46"
+                                        />
+                                      </div>
+                                      <div className="flex gap-3">
+                                        <span className="opacity-70">
+                                          Active:
+                                        </span>
+                                        <span>
+                                          {isSelected && isMergedTask(task)
+                                            ? task.bidStats.bidCounts[task._id][
+                                                marketplace as
+                                                  | "opensea"
+                                                  | "blur"
+                                                  | "magiceden"
+                                              ]
+                                            : 0}{" "}
+                                        </span>
+                                        <span className="opacity-50">|</span>
+                                        <span className="opacity-70">
+                                          Skip:
+                                        </span>
+                                        <span>
+                                          {isSelected && isMergedTask(task)
+                                            ? task.bidStats.skipCounts[
+                                                task._id
+                                              ][
+                                                marketplace as
+                                                  | "opensea"
+                                                  | "blur"
+                                                  | "magiceden"
+                                              ]
+                                            : 0}
+                                        </span>
+                                        <span className="opacity-50">|</span>
+                                        <span className="opacity-70">
+                                          Error:
+                                        </span>
+                                        <span>
+                                          {isSelected && isMergedTask(task)
+                                            ? task.bidStats.errorCounts[
+                                                task._id
+                                              ][
+                                                marketplace as
+                                                  | "opensea"
+                                                  | "blur"
+                                                  | "magiceden"
+                                              ]
+                                            : 0}
+                                        </span>
+                                      </div>
+                                    </div>
+                                  );
+                                }
+                              )}
+                            </div>
+                          </div>
+                        </td>
+                      )}
+
                       <td className="px-3 py-4 text-center w-[120px]">
                         {getBidType(task)}
                       </td>
-                      <td className="px-3 py-4 text-center w-[100px]">
-                        <span className="sm:hidden font-bold">OS</span>
-                        <Toggle
-                          checked={task.selectedMarketplaces.includes(
-                            "OpenSea"
-                          )}
-                          onChange={() => {
-                            if (
-                              !task.selectedMarketplaces.includes("OpenSea") &&
-                              !task.slugValid
-                            )
-                              return;
-                            onToggleMarketplace(task._id, "OpenSea");
-                          }}
-                          activeColor="#2081e2"
-                          inactiveColor="#3F3F46"
-                        />
-                      </td>
-                      <td className="px-3 py-4 text-center w-[100px]">
-                        <span className="sm:hidden font-bold">Blur</span>
-                        <Toggle
-                          checked={task.selectedMarketplaces.includes("Blur")}
-                          onChange={() => {
-                            if (
-                              !task.selectedMarketplaces.includes("Blur") &&
-                              (!task.blurValid || task.bidType === "token")
-                            )
-                              return;
-                            onToggleMarketplace(task._id, "Blur");
-                          }}
-                          activeColor="#FF8700"
-                          inactiveColor="#3F3F46"
-                        />
-                      </td>
-                      <td className="px-3 py-4 text-center w-[100px]">
-                        <span className="sm:hidden font-bold">ME</span>
-                        <Toggle
-                          checked={task.selectedMarketplaces.includes(
-                            "MagicEden"
-                          )}
-                          onChange={() => {
-                            if (
-                              !task.selectedMarketplaces.includes(
-                                "MagicEden"
-                              ) &&
-                              !task.magicEdenValid
-                            )
-                              return;
-                            onToggleMarketplace(task._id, "MagicEden");
-                          }}
-                          activeColor="#e42575"
-                          inactiveColor="#3F3F46"
-                        />
-                      </td>
+
                       <td className="px-3 py-4 text-center w-[100px]">
                         <span className="sm:hidden font-bold">Tags</span>
                         <div className="flex flex-wrap gap-1 items-center justify-center">
