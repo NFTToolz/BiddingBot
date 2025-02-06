@@ -27,9 +27,9 @@ const MarketplaceSection = ({
                 ? "bg-[#FF8700]"
                 : "bg-[#2081e2]";
             const isDisabled =
-              (marketplace === "OpenSea" && !formState.slugValid) ||
               (marketplace === "MagicEden" && !formState.magicEdenValid) ||
               (marketplace === "Blur" && !formState.blurValid) ||
+              (marketplace === "OpenSea" && !formState.openseaValid) ||
               (marketplace === "Blur" && formState.bidType === "token");
             return (
               <div className="flex flex-col" key={marketplace}>
@@ -79,7 +79,13 @@ const MarketplaceSection = ({
           ⚠️ this collection is not available on Blur Marketplace
         </p>
       ) : null}
-
+      {formState.validationComplete &&
+      formState.slugValid &&
+      !formState.openseaValid ? (
+        <p className="text-red-500 text-sm mt-1">
+          ⚠️ this collection is not available on OpenSea Marketplace
+        </p>
+      ) : null}
       {formState.validationComplete &&
       formState.slugValid &&
       !formState.magicEdenValid ? (

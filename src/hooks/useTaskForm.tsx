@@ -9,7 +9,7 @@ import { useWebSocket } from "@/app/context/WebSocketContext";
 export const useTaskForm = (
   initialState: Omit<
     TaskFormState,
-    "slugValid" | "slugDirty" | "magicEdenValid" | "blurValid"
+    "slugValid" | "slugDirty" | "magicEdenValid" | "blurValid" | "openseaValid"
   >,
   taskId?: string
 ) => {
@@ -26,6 +26,7 @@ export const useTaskForm = (
       ...initialState,
       slugValid: existingTask ? existingTask.slugValid : false,
       blurValid: existingTask ? existingTask.blurValid : false,
+      openseaValid: existingTask ? existingTask.openseaValid : false,
       magicEdenValid: existingTask ? existingTask.magicEdenValid : false,
       slugDirty: false,
       tags: initialState.tags || [],
@@ -110,6 +111,8 @@ export const useTaskForm = (
         magicEdenValid:
           taskId && existingTask ? existingTask?.magicEdenValid : false,
         blurValid: taskId && existingTask ? existingTask?.blurValid : false,
+        openseaValid:
+          taskId && existingTask ? existingTask?.openseaValid : false,
         slugDirty: prevState.slugDirty,
         tags: initialState.tags || [],
         selectedTraits: initialState.selectedTraits || {},
@@ -180,6 +183,7 @@ export const useTaskForm = (
           slugValid: false,
           magicEdenValid: false,
           blurValid: false,
+          openseaValid: false,
           blurFloorPrice: null,
           magicedenFloorPrice: null,
           openseaFloorPrice: null,
@@ -200,7 +204,8 @@ export const useTaskForm = (
 
         if (response.status === 200) {
           const data = await response.json();
-          const contractAddress = data.contracts[0]?.address || "";
+          const contractAddress = data.contractAddress;
+          const slugValid = data.slugValid;
 
           setFormState((prev) => ({
             ...prev,
@@ -208,11 +213,11 @@ export const useTaskForm = (
               ...prev.contract,
               contractAddress,
             },
-            slugValid: !!contractAddress,
+            slugValid: slugValid,
             validatingSlug: false,
           }));
 
-          if (!!contractAddress) {
+          if (slugValid) {
             try {
               setFormState((prev) => ({
                 ...prev,
@@ -228,6 +233,7 @@ export const useTaskForm = (
                   ...prev,
                   magicEdenValid: detailsData.magicEdenValid,
                   blurValid: detailsData.blurValid,
+                  openseaValid: detailsData.openseaValid,
                   blurFloorPrice: detailsData.blurFloorPrice,
                   magicedenFloorPrice: detailsData.magicedenFloorPrice,
                   openseaFloorPrice: detailsData.openseaFloorPrice,
@@ -249,6 +255,7 @@ export const useTaskForm = (
             slugValid: false,
             magicEdenValid: false,
             blurValid: false,
+            openseaValid: false,
             blurFloorPrice: null,
             magicedenFloorPrice: null,
             openseaFloorPrice: null,
@@ -270,6 +277,7 @@ export const useTaskForm = (
           slugValid: false,
           magicEdenValid: false,
           blurValid: false,
+          openseaValid: false,
           blurFloorPrice: null,
           magicedenFloorPrice: null,
           openseaFloorPrice: null,
@@ -307,6 +315,7 @@ export const useTaskForm = (
           slugValid: false,
           magicEdenValid: false,
           blurValid: false,
+          openseaValid: false,
         }));
       }
     }
@@ -435,6 +444,7 @@ export const useTaskForm = (
         slugValid: formState.slugValid,
         magicEdenValid: formState.magicEdenValid,
         blurValid: formState.blurValid,
+        openseaValid: formState.openseaValid,
       };
 
       try {
@@ -489,6 +499,7 @@ export const useTaskForm = (
             ...initialState,
             slugValid: false,
             blurValid: false,
+            openseaValid: false,
             magicEdenValid: false,
             slugDirty: false,
             blurFloorPrice: null,
@@ -554,6 +565,7 @@ export interface TaskFormState {
   running: boolean;
   slugValid: boolean;
   blurValid: boolean;
+  openseaValid: boolean;
   magicEdenValid: boolean;
   slugDirty: boolean;
   tags: { name: string; color: string }[];

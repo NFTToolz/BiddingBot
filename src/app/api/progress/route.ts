@@ -32,29 +32,6 @@ export async function POST(request: NextRequest) {
           magiceden: { count: 0, nextLoop: Date.now() },
           blur: { count: 0, nextLoop: Date.now() },
         };
-
-        await Promise.all(
-          selectedMarketplaces.map(async (marketplace: Marketplace) => {
-            const key = `${marketplace.toLowerCase()}:${taskId}:count`;
-            const count = (await redis.get(key)) ?? "";
-            orderCounts[taskId][marketplace.toLowerCase() as Marketplace] =
-              parseInt(count, 10);
-          })
-        );
-
-        await Promise.all(
-          selectedMarketplaces.map(async (marketplace: Marketplace) => {
-            const loopCountKey = `loop_count:${marketplace.toLowerCase()}:${taskId}`;
-            const nextLoopKey = `next_loop:${marketplace.toLowerCase()}:${taskId}`;
-            const loopCount = (await redis.get(loopCountKey)) ?? "";
-            const nextLoop = (await redis.get(nextLoopKey)) ?? "";
-            loopStat[taskId][marketplace.toLowerCase() as Marketplace].count =
-              parseInt(loopCount, 10);
-            loopStat[taskId][
-              marketplace.toLowerCase() as Marketplace
-            ].nextLoop = parseInt(nextLoop, 10);
-          })
-        );
       })
     );
     return NextResponse.json({ orderCounts, loopStat }, { status: 200 });

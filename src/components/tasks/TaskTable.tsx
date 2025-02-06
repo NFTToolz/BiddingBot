@@ -8,8 +8,7 @@ import DeleteIcon from "@/assets/svg/DeleteIcon";
 import { useTaskStore } from "@/store/task.store";
 import { toast } from "react-toastify";
 import DeleteModal from "./DeleteTaskModal";
-import { MergedTask } from "@/app/dashboard/tasks/page";
-import { BidStats } from "@/app/context/WebSocketContext";
+import { BidStats, WarningBids } from "@/app/context/WebSocketContext";
 
 const GENERAL_BID_PRICE = "GENERAL_BID_PRICE";
 const MARKETPLACE_BID_PRICE = "MARKETPLACE_BID_PRICE";
@@ -99,6 +98,32 @@ const TaskTable: React.FC<TaskTableProps> = ({
     });
   }, [mergedTasks, onToggleMarketplace]);
 
+  useEffect(() => {
+    mergedTasks?.forEach((task) => {
+      if (isMergedTask(task)) {
+        ["opensea", "blur", "magiceden"].forEach((marketplace) => {
+          if (
+            task.bidStats.warningBids[task._id][
+              marketplace as keyof (typeof task.bidStats.warningBids)[typeof task._id]
+            ]
+          ) {
+            // If there's a warning bid for this marketplace, turn it off
+            const marketplaceName =
+              marketplace === "opensea"
+                ? "OpenSea"
+                : marketplace === "magiceden"
+                ? "MagicEden"
+                : "Blur";
+
+            if (task.selectedMarketplaces.includes(marketplaceName)) {
+              onToggleMarketplace(task._id, marketplaceName);
+            }
+          }
+        });
+      }
+    });
+  }, [mergedTasks, onToggleMarketplace]);
+
   const isMergedTask = (task: Task | MergedTask): task is MergedTask => {
     return "bidStats" in task;
   };
@@ -134,8 +159,6 @@ const TaskTable: React.FC<TaskTableProps> = ({
       ),
     [tasks]
   );
-
-  console.log({ bidStats });
 
   return (
     <>
@@ -791,6 +814,43 @@ const TaskTable: React.FC<TaskTableProps> = ({
                                               ]
                                             : 0}
                                         </span>
+
+                                        {isMergedTask(task) &&
+                                          task.bidStats.warningBids[task._id][
+                                            marketplace as
+                                              | "opensea"
+                                              | "blur"
+                                              | "magiceden"
+                                          ] && (
+                                            <>
+                                              <span className="opacity-50">
+                                                |
+                                              </span>
+                                              <span className="opacity-70 flex items-center gap-1">
+                                                <div className="relative group">
+                                                  <svg
+                                                    width="16"
+                                                    height="16"
+                                                    viewBox="0 0 24 24"
+                                                    fill="none"
+                                                    stroke="#ef4444"
+                                                    strokeWidth="2"
+                                                    className="cursor-help"
+                                                  >
+                                                    <path
+                                                      strokeLinecap="round"
+                                                      strokeLinejoin="round"
+                                                      d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"
+                                                    />
+                                                  </svg>
+                                                  <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 whitespace-nowrap">
+                                                    Task stopped: Floor price
+                                                    below stop amount
+                                                  </div>
+                                                </div>
+                                              </span>
+                                            </>
+                                          )}
                                       </div>
                                     </div>
                                   );
@@ -917,6 +977,7 @@ interface TaskTableProps {
   isVerificationMode?: boolean;
   mergedTasks?: MergedTask[];
   bidStats?: BidStats;
+  warningBids?: WarningBids;
   totalBids?: {
     opensea: number;
     blur: number;
@@ -933,4 +994,8 @@ interface TaskTableProps {
     magiceden: number;
   };
   sendMessage?: (message: any) => void;
+}
+
+export interface MergedTask extends Task {
+  bidStats: BidStats;
 }

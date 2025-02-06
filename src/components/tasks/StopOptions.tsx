@@ -4,6 +4,18 @@ import { TaskFormState } from "@/hooks/useTaskForm";
 import Toggle from "../common/Toggle";
 
 const StopOption = ({ formState, setFormState }: IStopOption) => {
+  const openseaFloorPrice = Number(formState.openseaFloorPrice);
+  const blurFloorPrice = Number(formState.blurFloorPrice);
+  const magicedenFloorPrice = Number(formState.magicedenFloorPrice);
+
+  const validPrices = [
+    openseaFloorPrice,
+    blurFloorPrice,
+    magicedenFloorPrice,
+  ].filter((price) => price > 0);
+
+  const floorPrice = validPrices.length > 0 ? Math.min(...validPrices) : 0;
+
   const updateStopOptions = (
     updatedOptions: Partial<typeof formState.stopOptions>
   ) => {
@@ -71,59 +83,135 @@ const StopOption = ({ formState, setFormState }: IStopOption) => {
       {formState.stopOptions.triggerStopOptions ? (
         <div className="mt-6">
           <div className="flex flex-col gap-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label htmlFor="minFloorPrice" className="block text-sm mb-1">
                   Min Floor Price
                   <span className="text-red-500">*</span>
                 </label>
-                <input
-                  inputMode="numeric"
-                  type="number"
-                  id="minFloorPrice"
-                  step={0.0001}
-                  min={0.0001}
-                  name="minFloorPrice"
-                  onChange={(e) =>
-                    setFormState((prev) => ({
-                      ...prev,
-                      stopOptions: {
-                        ...prev.stopOptions,
-                        minFloorPrice: e.target.value,
-                      },
-                    }))
-                  }
-                  value={formState.stopOptions.minFloorPrice?.toString()}
-                  placeholder="0.0001"
-                  className={`w-full p-3 rounded-lg border border-Neutral-BG-[night] bg-Neutral/Neutral-300-[night] `}
-                  required={formState.stopOptions.triggerStopOptions}
-                  autoComplete="off"
-                />
+                <div className="flex flex-col gap-2">
+                  <input
+                    inputMode="numeric"
+                    type="number"
+                    id="minFloorPrice"
+                    step={0.0001}
+                    min={0.0001}
+                    name="minFloorPrice"
+                    onChange={(e) =>
+                      setFormState((prev) => ({
+                        ...prev,
+                        stopOptions: {
+                          ...prev.stopOptions,
+                          minFloorPrice: e.target.value,
+                        },
+                      }))
+                    }
+                    value={formState.stopOptions.minFloorPrice?.toString()}
+                    placeholder="0.0001"
+                    className="w-full p-3 rounded-lg border border-Neutral-BG-[night] bg-Neutral/Neutral-300-[night]"
+                    required={formState.stopOptions.triggerStopOptions}
+                    autoComplete="off"
+                  />
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setFormState((prev) => ({
+                          ...prev,
+                          stopOptions: {
+                            ...prev.stopOptions,
+                            minFloorPrice: Math.max(
+                              0.0001,
+                              floorPrice * 0.75
+                            ).toFixed(4),
+                          },
+                        }));
+                      }}
+                      className="flex-1 px-3 py-1.5 text-sm font-medium rounded-lg bg-Brand/Brand-1 transition-colors"
+                    >
+                      -25%
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setFormState((prev) => ({
+                          ...prev,
+                          stopOptions: {
+                            ...prev.stopOptions,
+                            minFloorPrice: Math.max(
+                              0.0001,
+                              floorPrice * 0.9
+                            ).toFixed(4),
+                          },
+                        }));
+                      }}
+                      className="flex-1 px-3 py-1.5 text-sm font-medium rounded-lg bg-Brand/Brand-1 transition-colors"
+                    >
+                      -10%
+                    </button>
+                  </div>
+                </div>
               </div>
               <div>
                 <label htmlFor="maxFloorPrice" className="block text-sm mb-1">
                   Max Floor Price
+                  <span className="text-red-500">*</span>
                 </label>
-                <input
-                  inputMode="numeric"
-                  type="number"
-                  id="maxFloorPrice"
-                  step={0.0001}
-                  name="maxFloorPrice"
-                  onChange={(e) =>
-                    setFormState((prev) => ({
-                      ...prev,
-                      stopOptions: {
-                        ...prev.stopOptions,
-                        maxFloorPrice: e.target.value,
-                      },
-                    }))
-                  }
-                  value={formState.stopOptions.maxFloorPrice?.toString()}
-                  placeholder="0.0001"
-                  className={`w-full p-3 rounded-lg border border-Neutral-BG-[night] bg-Neutral/Neutral-300-[night] `}
-                  autoComplete="off"
-                />
+                <div className="flex flex-col gap-2">
+                  <input
+                    inputMode="numeric"
+                    type="number"
+                    id="maxFloorPrice"
+                    step={0.0001}
+                    name="maxFloorPrice"
+                    onChange={(e) =>
+                      setFormState((prev) => ({
+                        ...prev,
+                        stopOptions: {
+                          ...prev.stopOptions,
+                          maxFloorPrice: e.target.value,
+                        },
+                      }))
+                    }
+                    value={formState.stopOptions.maxFloorPrice?.toString()}
+                    placeholder="0.0001"
+                    className="w-full p-3 rounded-lg border border-Neutral-BG-[night] bg-Neutral/Neutral-300-[night]"
+                    required={formState.stopOptions.triggerStopOptions}
+                    autoComplete="off"
+                  />
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setFormState((prev) => ({
+                          ...prev,
+                          stopOptions: {
+                            ...prev.stopOptions,
+                            maxFloorPrice: (floorPrice * 1.1).toFixed(4),
+                          },
+                        }));
+                      }}
+                      className="flex-1 px-3 py-1.5 text-sm font-medium rounded-lg bg-Brand/Brand-1 transition-colors"
+                    >
+                      +10%
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setFormState((prev) => ({
+                          ...prev,
+                          stopOptions: {
+                            ...prev.stopOptions,
+                            maxFloorPrice: (floorPrice * 1.25).toFixed(4),
+                          },
+                        }));
+                      }}
+                      className="flex-1 px-3 py-1.5 text-sm font-medium rounded-lg bg-Brand/Brand-1 transition-colors"
+                    >
+                      +25%
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
 

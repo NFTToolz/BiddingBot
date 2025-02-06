@@ -157,6 +157,7 @@ export interface BidStats {
   errorCounts: BidCounts;
   floorPrices: BidCounts;
   bestOffers: BidCounts;
+  warningBids: WarningBids;
 }
 
 export interface BidRates {
@@ -175,4 +176,12 @@ interface MarketplaceBidRate {
   bidsPerSecond: number;
   totalBids: number;
   windowPeriod: number;
+}
+
+export interface WarningBids {
+  [key: string]: {
+    opensea: boolean;
+    magiceden: boolean;
+    blur: boolean;
+  };
 }

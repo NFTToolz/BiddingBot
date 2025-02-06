@@ -1,0 +1,74 @@
+{
+  "collection": "goblintownwtf",
+  "name": "goblintown.wtf",
+  "description": "AAAAAAAUUUUUGGGHHHHH gobblins goblinns GOBLINNNNNNNNns wekm ta goblintown yoo sniksnakr DEJEN RATS oooooh rats are yummmz dis a NEFTEEE O GOBBLINGS on da BLOKCHIN wat? oh. crustybutt da goblinking say GEE EMMM DEDJEN RUTS an queenie saay HLLO SWEATIES ok dats all byeby\\n\\nLeern moar et https://www.trutharts.com/",
+  "image_url": "https://i.seadn.io/gae/cb_wdEAmvry_noTfeuQzhqKpghhZWQ_sEhuGS9swM03UM8QMEVJrndu0ZRdLFgGVqEPeCUzOHGTUllxug9U3xdvt0bES6VFdkRCKPqg?w=500&auto=format",
+  "banner_image_url": "https://i.seadn.io/gae/U1IY0rRHvXZ9K7fqDgBBJVnkJhlv0YrL0aMfYzY4XzTkWGyWroq8-GymDy_1e3S17Ze_FPIwg9yjheKxp42SSzUBrp_744yrA16XHKo?w=500&auto=format",
+  "owner": "0x62ac2dbbd306610ff8652b9e0d1a310b6c6afa0f",
+  "safelist_status": "verified",
+  "category": "pfps",
+  "is_disabled": false,
+  "is_nsfw": false,
+  "trait_offers_enabled": true,
+  "collection_offers_enabled": true,
+  "opensea_url": "https://opensea.io/collection/goblintownwtf",
+  "project_url": "https://magiceden.io/collections/ethereum/0x8c6def540b83471664edc6d5cf75883986932674",
+  "wiki_url": "",
+  "discord_url": "",
+  "telegram_url": "",
+  "twitter_username": "goblintown",
+  "instagram_username": "",
+  "contracts": [
+    {
+      "address": "0x8c6def540b83471664edc6d5cf75883986932674",
+      "chain": "ethereum"
+    }
+  ],
+  "editors": [
+    "0xa6e969a99f3bf3a726aaa8c7f53a8f1e8bd64eb1",
+    "0x62ac2dbbd306610ff8652b9e0d1a310b6c6afa0f"
+  ],
+  "fees": [
+    {
+      "fee": 2.5,
+      "recipient": "0x0000a26b00c1f0df003000390027140000faa719",
+      "required": true
+    },
+    {
+      "fee": 5,
+      "recipient": "0x12392f348d27488637886e26f8add0a8eddd368f",
+      "required": false
+    }
+  ],
+  "rarity": {
+    "strategy_id": "openrarity",
+    "strategy_version": "0.7.0b0",
+    "calculated_at": "2022-10-26T17:23:13.062867",
+    "max_rank": 216,
+    "tokens_scored": 1988
+  },
+  "payment_tokens": [
+    {
+      "symbol": "ETH",
+      "address": "0x0000000000000000000000000000000000000000",
+      "chain": "ethereum",
+      "image": "https://raw.seadn.io/files/ETH.svg",
+      "name": "Ether",
+      "decimals": 18,
+      "eth_price": "1.000000000000000",
+      "usd_price": "2761.030000000000200000"
+    },
+    {
+      "symbol": "WETH",
+      "address": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+      "chain": "ethereum",
+      "image": "https://raw.seadn.io/files/WETH.svg",
+      "name": "Wrapped Ether",
+      "decimals": 18,
+      "eth_price": "1.000000000000000",
+      "usd_price": "2760.039999999999964000"
+    }
+  ],
+  "total_supply": 9640,
+  "created_date": "2022-05-19"
+}

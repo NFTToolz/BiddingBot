@@ -37,6 +37,7 @@ export const useTaskStore = create(
                   slugValid: task.slugValid,
                   magicEdenValid: task.magicEdenValid,
                   blurValid: task.blurValid,
+                  openseaValid: task.openseaValid,
                   selectedTraits:
                     updatedTask.selectedTraits || task.selectedTraits,
                   bidDuration: updatedTask.bidDuration ?? task.bidDuration,
@@ -253,6 +254,7 @@ export const useTaskStore = create(
                   slugValid: task.slugValid,
                   magicEdenValid: task.magicEdenValid,
                   blurValid: task.blurValid,
+                  openseaValid: task.openseaValid,
                 }
               : task
           ),
@@ -365,4 +367,5 @@ export interface Task {
   slugValid: boolean;
   magicEdenValid: boolean;
   blurValid: boolean;
+  openseaValid: boolean;
 }

@@ -167,6 +167,15 @@ const Tasks = () => {
               blur: 0,
             },
           },
+
+          warningBids: {
+            [task._id]: (bidStats?.warningBids &&
+              bidStats.warningBids[task._id]) || {
+              opensea: false,
+              magiceden: false,
+              blur: false,
+            },
+          },
         },
       })
     );
@@ -747,6 +756,7 @@ const processData = (data: Task[]) => {
     "slugValid",
     "magicEdenValid",
     "blurValid",
+    "openseaValid",
   ];
 
   const getNestedValue = (obj: Record<string, any>, path: string): any => {
@@ -887,6 +897,7 @@ const convertCSVToTasks = (csvContent: string): Task[] => {
       slugValid: stringToBoolean(row.slugValid),
       magicEdenValid: stringToBoolean(row.magicEdenValid),
       blurValid: stringToBoolean(row.blurValid),
+      openseaValid: stringToBoolean(row.openseaValid),
     };
 
     return task;

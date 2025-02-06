@@ -155,6 +155,7 @@ export async function GET(request: NextRequest) {
       traits: combinedTraits,
       magicEdenValid: Number(magicedenFloorPrice) > 0,
       blurValid: Number(blurFloorPrice) > 0,
+      openseaValid: Number(openseaFloorPrice) > 0,
       blurFloorPrice,
       magicedenFloorPrice,
       openseaFloorPrice,

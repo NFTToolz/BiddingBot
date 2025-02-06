@@ -91,6 +91,7 @@ export interface ITask extends Document {
   slugValid: boolean;
   magicEdenValid: boolean;
   blurValid: boolean;
+  openseaValid: boolean;
 }
 
 const TaskSchema: Schema = new Schema(
@@ -185,6 +186,7 @@ const TaskSchema: Schema = new Schema(
     slugValid: { type: Boolean, default: null },
     magicEdenValid: { type: Boolean, default: null },
     blurValid: { type: Boolean, default: null },
+    openseaValid: { type: Boolean, default: null },
   },
   { timestamps: true }
 );

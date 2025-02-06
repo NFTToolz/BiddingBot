@@ -286,6 +286,7 @@ const TaskModal: React.FC<TaskModalProps> = ({
               ...prev,
               magicEdenValid: detailsData.magicEdenValid,
               blurValid: detailsData.blurValid,
+              openseaValid: detailsData.openseaValid,
               blurFloorPrice: detailsData.blurFloorPrice,
               magicedenFloorPrice: detailsData.magicedenFloorPrice,
               openseaFloorPrice: detailsData.openseaFloorPrice,
@@ -352,9 +353,11 @@ const TaskModal: React.FC<TaskModalProps> = ({
       blurBidPrice,
       magicEdenBidPrice,
       selectedMarketplaces,
+      slugValid,
     } = formState;
     return (
       contract.slug &&
+      slugValid &&
       contract.contractAddress &&
       wallet.address &&
       (bidPrice.min ||
@@ -434,11 +437,13 @@ const TaskModal: React.FC<TaskModalProps> = ({
           ? {
               slugValid: initialTask?.slugValid,
               blurValid: initialTask?.blurValid,
+              openseaValid: initialTask?.openseaValid,
               magicEdenValid: initialTask?.magicEdenValid,
             }
           : {
               slugValid: formState.slugValid,
               blurValid: formState.blurValid,
+              openseaValid: formState.openseaValid,
               magicEdenValid: formState.magicEdenValid,
             }),
       };
