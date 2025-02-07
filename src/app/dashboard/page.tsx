@@ -757,6 +757,7 @@ const processData = (data: Task[]) => {
     "magicEdenValid",
     "blurValid",
     "openseaValid",
+    "balance",
   ];
 
   const getNestedValue = (obj: Record<string, any>, path: string): any => {
@@ -898,6 +899,7 @@ const convertCSVToTasks = (csvContent: string): Task[] => {
       magicEdenValid: stringToBoolean(row.magicEdenValid),
       blurValid: stringToBoolean(row.blurValid),
       openseaValid: stringToBoolean(row.openseaValid),
+      balance: Number(row.balance) || 0,
     };
 
     return task;

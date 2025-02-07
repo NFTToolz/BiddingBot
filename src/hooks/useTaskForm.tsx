@@ -92,6 +92,7 @@ export const useTaskForm = (
       bidType: initialState.bidType || "collection",
       bidPriceType: initialState.bidPriceType || "general",
       blurFloorPrice: null,
+      balance: 0,
       magicedenFloorPrice: null,
       openseaFloorPrice: null,
       validatingSlug: false,
@@ -185,6 +186,7 @@ export const useTaskForm = (
           blurValid: false,
           openseaValid: false,
           blurFloorPrice: null,
+          balance: 0,
           magicedenFloorPrice: null,
           openseaFloorPrice: null,
           validatingSlug: false,
@@ -257,6 +259,7 @@ export const useTaskForm = (
             blurValid: false,
             openseaValid: false,
             blurFloorPrice: null,
+            balance: 0,
             magicedenFloorPrice: null,
             openseaFloorPrice: null,
             validatingSlug: false,
@@ -279,6 +282,7 @@ export const useTaskForm = (
           blurValid: false,
           openseaValid: false,
           blurFloorPrice: null,
+          balance: 0,
           magicedenFloorPrice: null,
           openseaFloorPrice: null,
           validatingSlug: false,
@@ -445,6 +449,7 @@ export const useTaskForm = (
         magicEdenValid: formState.magicEdenValid,
         blurValid: formState.blurValid,
         openseaValid: formState.openseaValid,
+        balance: formState.balance,
       };
 
       try {
@@ -503,6 +508,7 @@ export const useTaskForm = (
             magicEdenValid: false,
             slugDirty: false,
             blurFloorPrice: null,
+            balance: 0,
             magicedenFloorPrice: null,
             openseaFloorPrice: null,
             validatingSlug: false,
@@ -566,6 +572,7 @@ export interface TaskFormState {
   slugValid: boolean;
   blurValid: boolean;
   openseaValid: boolean;
+  balance: number;
   magicEdenValid: boolean;
   slugDirty: boolean;
   tags: { name: string; color: string }[];

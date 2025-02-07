@@ -38,6 +38,7 @@ export const useTaskStore = create(
                   magicEdenValid: task.magicEdenValid,
                   blurValid: task.blurValid,
                   openseaValid: task.openseaValid,
+                  balance: task.balance,
                   selectedTraits:
                     updatedTask.selectedTraits || task.selectedTraits,
                   bidDuration: updatedTask.bidDuration ?? task.bidDuration,
@@ -255,6 +256,7 @@ export const useTaskStore = create(
                   magicEdenValid: task.magicEdenValid,
                   blurValid: task.blurValid,
                   openseaValid: task.openseaValid,
+                  balance: task.balance,
                 }
               : task
           ),
@@ -368,4 +370,5 @@ export interface Task {
   magicEdenValid: boolean;
   blurValid: boolean;
   openseaValid: boolean;
+  balance: number;
 }

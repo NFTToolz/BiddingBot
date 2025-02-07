@@ -92,6 +92,7 @@ export interface ITask extends Document {
   magicEdenValid: boolean;
   blurValid: boolean;
   openseaValid: boolean;
+  balance: number;
 }
 
 const TaskSchema: Schema = new Schema(
@@ -187,6 +188,7 @@ const TaskSchema: Schema = new Schema(
     magicEdenValid: { type: Boolean, default: null },
     blurValid: { type: Boolean, default: null },
     openseaValid: { type: Boolean, default: null },
+    balance: { type: Number, default: 0 },
   },
   { timestamps: true }
 );

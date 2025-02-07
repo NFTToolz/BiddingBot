@@ -146,6 +146,7 @@ const TaskModal: React.FC<TaskModalProps> = ({
           bidType: initialTask.bidType,
           bidPriceType: initialTask.bidPriceType,
           blurFloorPrice: null,
+          balance: 0,
           magicedenFloorPrice: null,
           openseaFloorPrice: null,
           validatingSlug: false,
@@ -216,6 +217,7 @@ const TaskModal: React.FC<TaskModalProps> = ({
           bidType: "collection",
           bidPriceType: "GENERAL_BID_PRICE",
           blurFloorPrice: null,
+          balance: 0,
           magicedenFloorPrice: null,
           openseaFloorPrice: null,
           validatingSlug: false,
@@ -307,6 +309,20 @@ const TaskModal: React.FC<TaskModalProps> = ({
     initialTask?.contract.contractAddress,
     setFormState,
   ]);
+
+  useEffect(() => {
+    async function fetchBalance() {
+      const response = await fetch(
+        `/api/ethereum/balance?address=${formState.wallet.address}&contractAddress=${formState.contract.contractAddress}&taskId=${taskId}`
+      );
+      const data = await response.json();
+      setFormState((prev) => ({ ...prev, balance: data.balance }));
+    }
+
+    if (formState.wallet.address && formState.contract.contractAddress) {
+      fetchBalance();
+    }
+  }, [formState.wallet.address, formState.contract.contractAddress]);
 
   const walletOptions = wallets.map((wallet) => ({
     value: wallet.address,

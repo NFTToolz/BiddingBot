@@ -8,6 +8,8 @@ const StopOption = ({ formState, setFormState }: IStopOption) => {
   const blurFloorPrice = Number(formState.blurFloorPrice);
   const magicedenFloorPrice = Number(formState.magicedenFloorPrice);
 
+  const balance = Number(formState.balance);
+
   const validPrices = [
     openseaFloorPrice,
     blurFloorPrice,
@@ -281,7 +283,7 @@ const StopOption = ({ formState, setFormState }: IStopOption) => {
 						) : (
 							<></>
 						)} */}
-            {/* 
+
             <div>
               <label htmlFor="maxPurchase" className="block text-sm mb-1">
                 Maximum Purchase
@@ -308,7 +310,8 @@ const StopOption = ({ formState, setFormState }: IStopOption) => {
                 required
                 autoComplete="off"
               />
-            </div> */}
+              <span>Held: {balance}</span>
+            </div>
           </div>
         </div>
       ) : (

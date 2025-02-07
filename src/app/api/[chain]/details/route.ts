@@ -1,4 +1,5 @@
 import axios from "axios";
+import { ethers } from "ethers";
 import { NextRequest, NextResponse } from "next/server";
 
 const NEXT_PUBLIC_API_KEY = process.env.NEXT_PUBLIC_API_KEY as string;
