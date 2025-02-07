@@ -1,3 +1,4 @@
+import BidLogs from "@/models/logs.model";
 import Task from "@/models/task.model";
 import { getUserIdFromCookies } from "@/utils";
 import { connect } from "@/utils/mongodb";
@@ -139,6 +140,10 @@ export async function DELETE(request: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  // Delete associated logs first
+  await BidLogs.deleteMany({ taskId: { $in: ids } });
+
+  // Then delete the tasks
   const result = await Task.deleteMany({ _id: { $in: ids }, user: userId });
 
   return NextResponse.json(

@@ -162,88 +162,96 @@ const TaskTable: React.FC<TaskTableProps> = ({
 
   return (
     <>
-      {isVerificationMode ? null : (
-        <>
-          <div className="flex my-4 gap-4 text-sm">
-            <p>Bid Stats</p>
-            {["opensea", "blur", "magiceden"].map((marketplace, index) => (
-              <div className="flex gap-2 items-center" key={index}>
-                <div
-                  className={`w-4 h-4 rounded-full ${
-                    marketplace === "opensea"
-                      ? "bg-[#2081e2]"
-                      : marketplace === "blur"
-                      ? "bg-[#FF8700]"
-                      : marketplace === "magiceden"
-                      ? "bg-[#e42575]"
-                      : ""
-                  }`}
-                ></div>
-                <div>
-                  {
-                    (totalBids || { opensea: 0, blur: 0, magiceden: 0 })[
-                      marketplace as keyof typeof totalBids
-                    ]
-                  }
+      <div className="grid gap-6 mb-8">
+        {/* Bid Stats Section */}
+        <div className="bg-[#1f2129] rounded-xl p-4 shadow-lg">
+          <div className="grid grid-cols-1 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {/* Stats Sections: Total, Skipped, Error */}
+              {[
+                { title: "Total Bids", data: totalBids },
+                { title: "Skipped Bids", data: skipBids },
+                { title: "Error Bids", data: errorBids },
+              ].map((section, sectionIndex) => (
+                <div key={sectionIndex} className="space-y-4">
+                  <h3 className="text-sm font-medium text-gray-400">
+                    {section.title}
+                  </h3>
+                  <div className="flex flex-col gap-2">
+                    {["opensea", "blur", "magiceden"].map((marketplace) => (
+                      <div
+                        key={marketplace}
+                        className={`flex items-center justify-between px-4 py-2 rounded-lg ${
+                          marketplace === "opensea"
+                            ? "bg-[#2081e2]/10"
+                            : marketplace === "blur"
+                            ? "bg-[#FF8700]/10"
+                            : "bg-[#e42575]/10"
+                        }`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <div
+                            className={`w-3 h-3 rounded-full ${
+                              marketplace === "opensea"
+                                ? "bg-[#2081e2]"
+                                : marketplace === "blur"
+                                ? "bg-[#FF8700]"
+                                : "bg-[#e42575]"
+                            }`}
+                          />
+                          <span className="font-medium">
+                            {(
+                              (section.data || {
+                                opensea: 0,
+                                blur: 0,
+                                magiceden: 0,
+                              })[
+                                marketplace as "opensea" | "blur" | "magiceden"
+                              ] ?? 0
+                            ).toLocaleString()}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
 
-            <div className="flex gap-4">
-              <p>Bid Per Second:</p>
-              <p>{Math.ceil(totalBidsPerSecond)} / s</p>
+            {/* Bids/sec display */}
+            <div className="flex items-center gap-2">
+              <span className="text-gray-400">Bids/sec:</span>
+              {["opensea", "blur", "magiceden"].map((marketplace) => (
+                <div
+                  key={`bps-${marketplace}`}
+                  className="flex items-center gap-1"
+                  title={`${marketplace} bids per second`}
+                >
+                  <div
+                    className={`w-2 h-2 rounded-full ${
+                      marketplace === "opensea"
+                        ? "bg-[#2081e2]"
+                        : marketplace === "blur"
+                        ? "bg-[#FF8700]"
+                        : "bg-[#e42575]"
+                    }`}
+                  />
+                  <span className="font-medium tabular-nums min-w-[40px] text-right">
+                    {(
+                      bidStats?.bidRates?.[
+                        marketplace as keyof typeof bidStats.bidRates
+                      ]?.bidsPerSecond || 0
+                    ).toFixed(1)}
+                  </span>
+                </div>
+              ))}
+              <span className="font-medium tabular-nums min-w-[40px] text-right ml-2">
+                {totalBidsPerSecond.toFixed(1)}
+              </span>
             </div>
           </div>
-
-          <div className="flex my-4 gap-4 text-sm">
-            <p>Skipped Bids</p>
-            {["opensea", "blur", "magiceden"].map((marketplace, index) => (
-              <div className="flex gap-2 items-center" key={index}>
-                <div
-                  className={`w-4 h-4 rounded-full ${
-                    marketplace === "opensea"
-                      ? "bg-[#2081e2]"
-                      : marketplace === "blur"
-                      ? "bg-[#FF8700]"
-                      : marketplace === "magiceden"
-                      ? "bg-[#e42575]"
-                      : ""
-                  }`}
-                ></div>
-                <div>
-                  {(skipBids || { opensea: 0, blur: 0, magiceden: 0 })[
-                    marketplace as keyof typeof skipBids
-                  ] || 0}
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <div className="flex my-4 gap-4 text-sm">
-            <p>Error Bids</p>
-            {["opensea", "blur", "magiceden"].map((marketplace, index) => (
-              <div className="flex gap-2 items-center" key={index}>
-                <div
-                  className={`w-4 h-4 rounded-full ${
-                    marketplace === "opensea"
-                      ? "bg-[#2081e2]"
-                      : marketplace === "blur"
-                      ? "bg-[#FF8700]"
-                      : marketplace === "magiceden"
-                      ? "bg-[#e42575]"
-                      : ""
-                  }`}
-                ></div>
-                <div>
-                  {(errorBids || { opensea: 0, blur: 0, magiceden: 0 })[
-                    marketplace as keyof typeof errorBids
-                  ] || 0}
-                </div>
-              </div>
-            ))}
-          </div>
-        </>
-      )}
+        </div>
+      </div>
       <div className="border rounded-2xl py-3 sm:py-5 px-2 sm:px-3 bg-[#1f2129] border-Neutral/Neutral-Border-[night] h-full">
         <div className="overflow-x-auto w-full">
           <table className="min-w-full table-fixed whitespace-nowrap text-sm">
@@ -283,11 +291,11 @@ const TaskTable: React.FC<TaskTableProps> = ({
                     </div>
                   </label>
                 </th>
-                <th scope="col" className="px-3 py-3 text-center w-[180px]">
+                <th scope="col" className="px-3 py-3 text-left w-[180px]">
                   Slug
                 </th>
 
-                <th scope="col" className="px-3 py-3 text-center w-[180px]">
+                <th scope="col" className="px-3 py-3 text-left w-[180px]">
                   Bid Amount
                 </th>
                 {isVerificationMode ? null : (
@@ -329,7 +337,7 @@ const TaskTable: React.FC<TaskTableProps> = ({
                                     : "Blur"}
                                 </span>
                                 <Toggle
-                                  checked={tasks.some((task) =>
+                                  checked={tasks.every((task) =>
                                     task.selectedMarketplaces.includes(
                                       marketplace === "opensea"
                                         ? "OpenSea"
@@ -339,15 +347,51 @@ const TaskTable: React.FC<TaskTableProps> = ({
                                     )
                                   )}
                                   onChange={() => {
-                                    tasks.forEach((task) => {
-                                      onToggleMarketplace(
-                                        task._id,
+                                    // Check if all tasks have this marketplace selected
+                                    const isAllSelected = tasks.every((task) =>
+                                      task.selectedMarketplaces.includes(
                                         marketplace === "opensea"
                                           ? "OpenSea"
                                           : marketplace === "magiceden"
                                           ? "MagicEden"
                                           : "Blur"
-                                      );
+                                      )
+                                    );
+
+                                    // Toggle all tasks based on current state
+                                    tasks.forEach((task) => {
+                                      const marketplaceName =
+                                        marketplace === "opensea"
+                                          ? "OpenSea"
+                                          : marketplace === "magiceden"
+                                          ? "MagicEden"
+                                          : "Blur";
+
+                                      // If all are selected, remove the marketplace from all tasks
+                                      // If not all are selected, add the marketplace to all tasks
+                                      if (isAllSelected) {
+                                        if (
+                                          task.selectedMarketplaces.includes(
+                                            marketplaceName
+                                          )
+                                        ) {
+                                          onToggleMarketplace(
+                                            task._id,
+                                            marketplaceName
+                                          );
+                                        }
+                                      } else {
+                                        if (
+                                          !task.selectedMarketplaces.includes(
+                                            marketplaceName
+                                          )
+                                        ) {
+                                          onToggleMarketplace(
+                                            task._id,
+                                            marketplaceName
+                                          );
+                                        }
+                                      }
                                     });
                                   }}
                                   activeColor={
@@ -430,14 +474,16 @@ const TaskTable: React.FC<TaskTableProps> = ({
                         </label>
                       </td>
 
-                      <td className="px-3 py-4 text-center w-[180px]">
+                      <td className="px-3 py-4 w-[180px]">
                         <div className="flex flex-col gap-2">
-                          <Link
-                            href={`/dashboard/tasks/${task._id}`}
-                            className="text-Brand/Brand-1 underline text-sm mb-2"
-                          >
-                            {task.contract.slug}
-                          </Link>
+                          <div className="px-3">
+                            <Link
+                              href={`/dashboard/tasks/${task._id}`}
+                              className="text-Brand/Brand-1 underline text-sm mb-2"
+                            >
+                              {task.contract.slug}
+                            </Link>
+                          </div>
 
                           {/* Market stats */}
                           <div className="flex flex-col gap-2 text-sm">
@@ -529,8 +575,8 @@ const TaskTable: React.FC<TaskTableProps> = ({
                           </div>
                         </div>
                       </td>
-                      <td className="px-3 py-4 text-center w-[180px]">
-                        <p className="mb-4 leading-6 opacity-0 text-sm underline">
+                      <td className="px-3 py-4 w-[180px]">
+                        <p className="mb-2 leading-5 opacity-0 text-sm underline">
                           Hello World
                         </p>
                         <div className="flex flex-col gap-2 text-sm">
@@ -683,8 +729,8 @@ const TaskTable: React.FC<TaskTableProps> = ({
                       </td>
 
                       {isVerificationMode ? null : (
-                        <td className="px-3 py-4 text-center w-[250px]">
-                          <p className="mb-4 leading-6 opacity-0 text-sm underline">
+                        <td className="px-3 py-4 text-center w-[400px]">
+                          <p className="mb-2 leading-5 opacity-0 text-sm underline">
                             Hello World
                           </p>
                           <div className="flex flex-col gap-3">
@@ -712,7 +758,7 @@ const TaskTable: React.FC<TaskTableProps> = ({
                                           : "bg-[#e42575]/10"
                                       }`}
                                     >
-                                      <div className="flex items-center gap-2">
+                                      <div className="flex items-center gap-2 min-w-[100px]">
                                         <div
                                           className={`w-2 h-2 rounded-full ${
                                             marketplace === "opensea"
@@ -768,52 +814,60 @@ const TaskTable: React.FC<TaskTableProps> = ({
                                           inactiveColor="#3F3F46"
                                         />
                                       </div>
-                                      <div className="flex gap-3">
-                                        <span className="opacity-70">
-                                          Active:
-                                        </span>
-                                        <span>
-                                          {isSelected && isMergedTask(task)
-                                            ? task.bidStats.bidCounts[task._id][
-                                                marketplace as
-                                                  | "opensea"
-                                                  | "blur"
-                                                  | "magiceden"
-                                              ]
-                                            : 0}{" "}
-                                        </span>
+                                      <div className="flex gap-4">
+                                        <div className="flex items-center gap-2 min-w-[80px]">
+                                          <span className="opacity-70">
+                                            Active:
+                                          </span>
+                                          <span className="tabular-nums">
+                                            {isSelected && isMergedTask(task)
+                                              ? task.bidStats.bidCounts[
+                                                  task._id
+                                                ][
+                                                  marketplace as
+                                                    | "opensea"
+                                                    | "blur"
+                                                    | "magiceden"
+                                                ]
+                                              : 0}
+                                          </span>
+                                        </div>
                                         <span className="opacity-50">|</span>
-                                        <span className="opacity-70">
-                                          Skip:
-                                        </span>
-                                        <span>
-                                          {isSelected && isMergedTask(task)
-                                            ? task.bidStats.skipCounts[
-                                                task._id
-                                              ][
-                                                marketplace as
-                                                  | "opensea"
-                                                  | "blur"
-                                                  | "magiceden"
-                                              ]
-                                            : 0}
-                                        </span>
+                                        <div className="flex items-center gap-2 min-w-[80px]">
+                                          <span className="opacity-70">
+                                            Skip:
+                                          </span>
+                                          <span className="tabular-nums">
+                                            {isSelected && isMergedTask(task)
+                                              ? task.bidStats.skipCounts[
+                                                  task._id
+                                                ][
+                                                  marketplace as
+                                                    | "opensea"
+                                                    | "blur"
+                                                    | "magiceden"
+                                                ]
+                                              : 0}
+                                          </span>
+                                        </div>
                                         <span className="opacity-50">|</span>
-                                        <span className="opacity-70">
-                                          Error:
-                                        </span>
-                                        <span>
-                                          {isSelected && isMergedTask(task)
-                                            ? task.bidStats.errorCounts[
-                                                task._id
-                                              ][
-                                                marketplace as
-                                                  | "opensea"
-                                                  | "blur"
-                                                  | "magiceden"
-                                              ]
-                                            : 0}
-                                        </span>
+                                        <div className="flex items-center gap-2 min-w-[80px]">
+                                          <span className="opacity-70">
+                                            Error:
+                                          </span>
+                                          <span className="tabular-nums">
+                                            {isSelected && isMergedTask(task)
+                                              ? task.bidStats.errorCounts[
+                                                  task._id
+                                                ][
+                                                  marketplace as
+                                                    | "opensea"
+                                                    | "blur"
+                                                    | "magiceden"
+                                                ]
+                                              : 0}
+                                          </span>
+                                        </div>
 
                                         {isMergedTask(task) &&
                                           task.bidStats.warningBids[task._id][

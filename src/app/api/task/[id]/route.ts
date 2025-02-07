@@ -1,3 +1,4 @@
+import BidLogs from "@/models/logs.model";
 import Task from "@/models/task.model";
 import { getUserIdFromCookies } from "@/utils";
 import { connect } from "@/utils/mongodb";
@@ -139,8 +140,6 @@ export async function DELETE(
   const userId = await getUserIdFromCookies(request);
   const taskId = params.id;
 
-  console.log({ taskId });
-
   if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
@@ -154,9 +153,14 @@ export async function DELETE(
     return NextResponse.json({ error: "Task not found" }, { status: 404 });
   }
 
-  await Task.findByIdAndDelete(taskId);
+  // Delete the task and its associated logs
+  await Promise.all([
+    Task.findByIdAndDelete(taskId),
+    BidLogs.deleteMany({ taskId: taskId }),
+  ]);
+
   return NextResponse.json(
-    { message: "Task deleted successfully" },
+    { message: "Task and associated logs deleted successfully" },
     { status: 200 }
   );
 }
