@@ -40,6 +40,9 @@ export default function Page({ params }: { params: { slug: string } }) {
   >([]);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<
+    "success" | "skipped" | "warning" | "error"
+  >("success");
 
   const { tasks, toggleTaskRunning } = useTaskStore();
   const { sendMessage } = useWebSocket();
@@ -54,6 +57,40 @@ export default function Page({ params }: { params: { slug: string } }) {
     revalidateOnFocus: true,
     refreshInterval: 1000,
   });
+
+  const { data: logs }: { data: IBidLogs[] } = useSWR(
+    `/api/task/logs/${params.slug}`,
+    fetcher,
+    {
+      refreshInterval: 1000,
+    }
+  );
+
+  const getCounts = useCallback(() => {
+    return {
+      success: data?.length || 0,
+      skipped: logs?.filter((log) => log.type === "skipped").length || 0,
+      warnings: logs?.filter((log) => log.type === "warning").length || 0,
+      errors: logs?.filter((log) => log.type === "error").length || 0,
+    };
+  }, [data, logs]);
+
+  const counts = getCounts();
+
+  const filteredLogs =
+    logs?.filter((log) => {
+      console.log("Filtering log:", log, "activeTab:", activeTab);
+      return (
+        log.type === activeTab &&
+        (selectedMarketplaces.length === 0 ||
+          selectedMarketplaces.includes(log.marketplace as Marketplace))
+      );
+    }) || [];
+
+  const currentLogs = filteredLogs.slice(
+    (currentPage - 1) * recordsPerPage,
+    currentPage * recordsPerPage
+  );
 
   const toggleSelectAll = () => {
     setSelectAll(!selectAll);
@@ -84,8 +121,14 @@ export default function Page({ params }: { params: { slug: string } }) {
       selectedMarketplaces.includes(bid.marketplace as Marketplace)
   );
 
+  const totalPages =
+    Math.ceil(
+      activeTab === "success"
+        ? (filteredBids?.length || 0) / recordsPerPage
+        : (filteredLogs?.length || 0) / recordsPerPage
+    ) || 1;
+
   const indexOfLastOffer = currentPage * recordsPerPage;
-  const totalPages = Math.ceil(filteredBids?.length / recordsPerPage) ?? 1;
   const indexOfFirstOffer = indexOfLastOffer - recordsPerPage;
   const currentBids =
     filteredBids?.slice(indexOfFirstOffer, indexOfLastOffer) ?? [];
@@ -295,162 +338,271 @@ export default function Page({ params }: { params: { slug: string } }) {
           </div>
         </div>
       </div>
-      <div className="border rounded-2xl py-3 sm:py-5 px-2 sm:px-6 bg-[#1f2129] border-Neutral/Neutral-Border-[night] h-full overflow-x-auto mt-8">
-        <table className="w-full text-sm text-left">
-          <thead className="hidden sm:table-header-group">
-            <tr className="border-b border-Neutral/Neutral-Border-[night]">
-              <th scope="col" className="px-6 py-3 text-center">
-                <label className="inline-flex items-center cursor-pointer">
-                  <input
-                    type="checkbox"
-                    className="sr-only"
-                    checked={selectAll}
-                    onChange={toggleSelectAll}
-                  />
-                  <div
-                    className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-colors duration-200 ease-in-out ${
-                      selectAll
-                        ? "bg-[#7F56D9] border-[#7F56D9]"
-                        : "bg-transparent border-gray-400"
-                    }`}
-                  >
-                    {selectAll && (
-                      <svg
-                        className="w-3 h-3 text-white"
-                        viewBox="0 0 16 16"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path
-                          d="M13.3333 4L6 11.3333L2.66667 8"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
-                      </svg>
-                    )}
-                  </div>
-                </label>
-              </th>
-              <th scope="col" className="px-6 py-3 text-center">
-                marketplace
-              </th>
-              <th scope="col" className="px-6 py-3 text-center">
-                name
-              </th>
-              <th scope="col" className="px-6 py-3 text-center">
-                offer price
-              </th>
-              <th scope="col" className="px-6 py-3 text-center">
-                Expires In
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {currentBids &&
-              currentBids?.length > 0 &&
-              currentBids?.map((bid, index) => {
-                return (
+      <div className="flex space-x-1 mb-4">
+        <button
+          onClick={() => setActiveTab("success")}
+          className={`px-4 py-2 rounded-t-lg ${
+            activeTab === "success"
+              ? "bg-[#1f2129] text-Brand/Brand-1 border-b-2 border-Brand/Brand-1"
+              : "bg-transparent text-gray-400 hover:text-gray-300"
+          }`}
+        >
+          Success ({counts.success})
+        </button>
+        <button
+          onClick={() => setActiveTab("skipped")}
+          className={`px-4 py-2 rounded-t-lg ${
+            activeTab === "skipped"
+              ? "bg-[#1f2129] text-yellow-500 border-b-2 border-yellow-500"
+              : "bg-transparent text-gray-400 hover:text-gray-300"
+          }`}
+        >
+          Skipped ({counts.skipped})
+        </button>
+        <button
+          onClick={() => setActiveTab("warning")}
+          className={`px-4 py-2 rounded-t-lg ${
+            activeTab === "warning"
+              ? "bg-[#1f2129] text-orange-500 border-b-2 border-orange-500"
+              : "bg-transparent text-gray-400 hover:text-gray-300"
+          }`}
+        >
+          Warnings ({counts.warnings})
+        </button>
+        <button
+          onClick={() => setActiveTab("error")}
+          className={`px-4 py-2 rounded-t-lg ${
+            activeTab === "error"
+              ? "bg-[#1f2129] text-red-500 border-b-2 border-red-500"
+              : "bg-transparent text-gray-400 hover:text-gray-300"
+          }`}
+        >
+          Errors ({counts.errors})
+        </button>
+      </div>
+
+      {activeTab === "success" && (
+        <div className="border rounded-2xl py-3 sm:py-5 px-2 sm:px-6 bg-[#1f2129] border-Neutral/Neutral-Border-[night] h-full overflow-x-auto">
+          <table className="w-full text-sm text-left">
+            <thead className="hidden sm:table-header-group">
+              <tr className="border-b border-Neutral/Neutral-Border-[night]">
+                <th scope="col" className="px-6 py-3 text-left">
+                  <label className="inline-flex items-center cursor-pointer">
+                    <input
+                      type="checkbox"
+                      className="sr-only"
+                      checked={selectAll}
+                      onChange={toggleSelectAll}
+                    />
+                    <div
+                      className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-colors duration-200 ease-in-out ${
+                        selectAll
+                          ? "bg-[#7F56D9] border-[#7F56D9]"
+                          : "bg-transparent border-gray-400"
+                      }`}
+                    >
+                      {selectAll && (
+                        <svg
+                          className="w-3 h-3 text-white"
+                          viewBox="0 0 16 16"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            d="M13.3333 4L6 11.3333L2.66667 8"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
+                        </svg>
+                      )}
+                    </div>
+                  </label>
+                </th>
+                <th scope="col" className="px-6 py-3 text-left">
+                  marketplace
+                </th>
+                <th scope="col" className="px-6 py-3 text-left">
+                  name
+                </th>
+                <th scope="col" className="px-6 py-3 text-left">
+                  offer price
+                </th>
+                <th scope="col" className="px-6 py-3 text-left">
+                  Expires In
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {currentBids &&
+                currentBids?.length > 0 &&
+                currentBids?.map((bid, index) => {
+                  return (
+                    <tr
+                      key={index}
+                      className="border-b border-Neutral/Neutral-Border-[night] flex flex-col sm:table-row mb-4 sm:mb-0"
+                    >
+                      <td className="py-2 px-2 sm:px-4 text-left flex items-center justify-between sm:table-cell">
+                        <span className="sm:hidden font-bold">Select</span>
+                        <label className="inline-flex items-center cursor-pointer">
+                          <input
+                            type="checkbox"
+                            className="sr-only"
+                            checked={selectedBids
+                              .map((offer) => offer.key)
+                              .includes(bid.key)}
+                            onChange={() => toggleBid(bid.key)}
+                          />
+                          <div
+                            className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-colors duration-200 ease-in-out ${
+                              selectedBids
+                                .map((offer) => offer.key)
+                                .includes(bid.key)
+                                ? "bg-[#7F56D9] border-[#7F56D9]"
+                                : "bg-transparent border-gray-400"
+                            }`}
+                          >
+                            {selectedBids
+                              .map((offer) => offer.key)
+                              .includes(bid.key) && (
+                              <svg
+                                className="w-3 h-3 text-white"
+                                viewBox="0 0 16 16"
+                                fill="none"
+                                xmlns="http://www.w3.org/2000/svg"
+                              >
+                                <path
+                                  d="M13.3333 4L6 11.3333L2.66667 8"
+                                  stroke="currentColor"
+                                  strokeWidth="2"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                />
+                              </svg>
+                            )}
+                          </div>
+                        </label>
+                      </td>
+                      <td className="py-2 px-2 sm:px-4 text-left flex items-center justify-start sm:table-cell">
+                        <div className="flex gap-2 items-center justify-center">
+                          <span
+                            className={`w-4 h-4 rounded-full ${
+                              bid.marketplace === "opensea"
+                                ? "bg-[#2081e2]"
+                                : bid.marketplace === "blur"
+                                ? "bg-[#FF8700]"
+                                : bid.marketplace === "magiceden"
+                                ? "bg-[#e42575]"
+                                : ""
+                            }`}
+                          ></span>
+                          <div>{bid.marketplace}</div>
+                        </div>
+                      </td>
+                      <td className="px-2 sm:px-6 py-2 sm:py-4 text-left flex items-end justify-start gap-2 flex-row">
+                        <span>{task?.contract.slug}</span>
+                        <div className="flex flex-row">
+                          {(() => {
+                            if (bid?.identifier?.split(":").length == 2) {
+                              return (
+                                <div className="flex border border-n-4 gap-2">
+                                  <span className="border-n-4 border-r px-2 bg-n-5">
+                                    {bid?.identifier?.split(":")[0]}
+                                  </span>
+                                  <span className="px-2">
+                                    {bid?.identifier?.split(":")[1]}
+                                  </span>
+                                </div>
+                              );
+                            } else {
+                              return (
+                                <span className="px-2 bg-n-5">
+                                  {bid?.identifier}
+                                </span>
+                              );
+                            }
+                          })()}
+                        </div>
+                      </td>
+                      <td className="px-2 sm:px-6 py-2 sm:py-4 text-left flex items-center justify-between sm:table-cell">
+                        {Number(bid.offerPrice) / 1e18}{" "}
+                        {bid.marketplace === "blur" ? "BETH" : "WETH"}
+                      </td>
+                      <td className="px-2 sm:px-6 py-2 sm:py-4 text-left flex items-center justify-between sm:table-cell">
+                        {formatTimeRemaining(bid.ttl)}
+                      </td>
+                    </tr>
+                  );
+                })}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {activeTab !== "success" && (
+        <div className="border rounded-2xl py-3 sm:py-5 px-2 sm:px-6 bg-[#1f2129] border-Neutral/Neutral-Border-[night] h-full overflow-x-auto">
+          {currentLogs && currentLogs.length > 0 ? (
+            <table className="w-full text-sm text-left">
+              <thead className="hidden sm:table-header-group">
+                <tr className="border-b border-Neutral/Neutral-Border-[night]">
+                  <th scope="col" className="px-6 py-3 text-left">
+                    Marketplace
+                  </th>
+                  <th scope="col" className="px-6 py-3 text-left">
+                    Title
+                  </th>
+                  <th scope="col" className="px-6 py-3 text-left">
+                    Message
+                  </th>
+                  <th scope="col" className="px-6 py-3 text-left">
+                    Time
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {currentLogs.map((log, index) => (
                   <tr
                     key={index}
                     className="border-b border-Neutral/Neutral-Border-[night] flex flex-col sm:table-row mb-4 sm:mb-0"
                   >
-                    <td className="py-2 px-2 sm:px-4 text-left sm:text-center flex items-center justify-between sm:table-cell">
-                      <span className="sm:hidden font-bold">Select</span>
-                      <label className="inline-flex items-center cursor-pointer">
-                        <input
-                          type="checkbox"
-                          className="sr-only"
-                          checked={selectedBids
-                            .map((offer) => offer.key)
-                            .includes(bid.key)}
-                          onChange={() => toggleBid(bid.key)}
-                        />
-                        <div
-                          className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-colors duration-200 ease-in-out ${
-                            selectedBids
-                              .map((offer) => offer.key)
-                              .includes(bid.key)
-                              ? "bg-[#7F56D9] border-[#7F56D9]"
-                              : "bg-transparent border-gray-400"
-                          }`}
-                        >
-                          {selectedBids
-                            .map((offer) => offer.key)
-                            .includes(bid.key) && (
-                            <svg
-                              className="w-3 h-3 text-white"
-                              viewBox="0 0 16 16"
-                              fill="none"
-                              xmlns="http://www.w3.org/2000/svg"
-                            >
-                              <path
-                                d="M13.3333 4L6 11.3333L2.66667 8"
-                                stroke="currentColor"
-                                strokeWidth="2"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                              />
-                            </svg>
-                          )}
-                        </div>
-                      </label>
-                    </td>
-                    <td className="py-2 px-2 sm:px-4 text-left sm:text-center flex items-center justify-start sm:table-cell ">
+                    <td className="py-2 px-2 sm:px-4 text-left flex items-center justify-start sm:table-cell">
                       <div className="flex gap-2 items-center justify-center">
                         <span
                           className={`w-4 h-4 rounded-full ${
-                            bid.marketplace === "opensea"
+                            log.marketplace === "opensea"
                               ? "bg-[#2081e2]"
-                              : bid.marketplace === "blur"
+                              : log.marketplace === "blur"
                               ? "bg-[#FF8700]"
-                              : bid.marketplace === "magiceden"
+                              : log.marketplace === "magiceden"
                               ? "bg-[#e42575]"
                               : ""
                           }`}
                         ></span>
-                        <div>{bid.marketplace}</div>
+                        <div>{log.marketplace}</div>
                       </div>
                     </td>
-                    <td className="px-2 sm:px-6 py-2 sm:py-4 text-left sm:text-center flex items-end justify-center gap-2 flex-row">
-                      <span>{task?.contract.slug}</span>
-                      <div className="flex flex-row">
-                        {(() => {
-                          if (bid?.identifier?.split(":").length == 2) {
-                            return (
-                              <div className="flex border border-n-4 gap-2">
-                                <span className="border-n-4 border-r px-2 bg-n-5">
-                                  {bid?.identifier?.split(":")[0]}
-                                </span>
-                                <span className="px-2">
-                                  {bid?.identifier?.split(":")[1]}
-                                </span>
-                              </div>
-                            );
-                          } else {
-                            return (
-                              <span className="px-2 bg-n-5">
-                                {bid?.identifier}
-                              </span>
-                            );
-                          }
-                        })()}
-                      </div>
+                    <td className="px-2 sm:px-6 py-2 sm:py-4 text-left">
+                      {log.title}
                     </td>
-                    <td className="px-2 sm:px-6 py-2 sm:py-4 text-left sm:text-center flex items-center justify-between sm:table-cell">
-                      {Number(bid.offerPrice) / 1e18}{" "}
-                      {bid.marketplace === "blur" ? "BETH" : "WETH"}
+                    <td className="px-2 sm:px-6 py-2 sm:py-4 text-left">
+                      {log.message}
                     </td>
-                    <td className="px-2 sm:px-6 py-2 sm:py-4 text-left sm:text-center flex items-center justify-between sm:table-cell">
-                      {formatTimeRemaining(bid.ttl)}
+                    <td className="px-2 sm:px-6 py-2 sm:py-4 text-left">
+                      {new Date(log.createdAt).toLocaleString()}
                     </td>
                   </tr>
-                );
-              })}
-          </tbody>
-        </table>
-      </div>
+                ))}
+              </tbody>
+            </table>
+          ) : (
+            <p className="text-center text-gray-400 py-8">
+              No {activeTab} logs found for the selected filters
+            </p>
+          )}
+        </div>
+      )}
+
       <div className="flex flex-col sm:flex-row justify-between items-center mt-4 space-y-4 sm:space-y-0">
         <div className="flex items-center space-x-2">
           <span className="text-sm text-gray-400">Show</span>
@@ -520,4 +672,13 @@ interface OfferData {
   identifier: any;
   offerPrice: string;
   expirationDate: string;
+}
+
+interface IBidLogs {
+  taskId: string;
+  title: string;
+  message: string;
+  type: "skipped" | "warning" | "error";
+  marketplace: "opensea" | "magiceden" | "blur";
+  createdAt: string;
 }
