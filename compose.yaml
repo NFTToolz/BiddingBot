@@ -1,6 +1,35 @@
 version: "3.8"
 
 services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3001:3001"
+      - "3003:3003"
+    environment:
+      - REDIS_NODES=[{"host":"redis-node-1","port":6379},{"host":"redis-node-2","port":6379},{"host":"redis-node-3","port":6379},{"host":"redis-node-4","port":6379},{"host":"redis-node-5","port":6379},{"host":"redis-node-6","port":6379},{"host":"redis-node-7","port":6379},{"host":"redis-node-8","port":6379},{"host":"redis-node-9","port":ou6379}]
+      - REDIS_NET_MAP={"redis-node-1:6379":{"host":"redis-node-1","port":6379},"redis-node-2:6379":{"host":"redis-node-2","port":6379},"redis-node-3:6379":{"host":"redis-node-3","port":6379},"redis-node-4:6379":{"host":"redis-node-4","port":6379},"redis-node-5:6379":{"host":"redis-node-5","port":6379},"redis-node-6:6379":{"host":"redis-node-6","port":6379},"redis-node-7:6379":{"host":"redis-node-7","port":6379},"redis-node-8:6379":{"host":"redis-node-8","port":6379},"redis-node-9:6379":{"host":"redis-node-9","port":6379}}
+      - CLIENT_URL=http://localhost:3001/
+      - NEXT_PUBLIC_CLIENT_URL=http://localhost:3001/
+      - NEXT_PUBLIC_SERVER_WEBSOCKET=ws://localhost:3003
+      - NEXT_PUBLIC_ALCHEMY_API_KEY=HGWgCONolXMB2op5UjPH1YreDCwmSbvx
+      - MONGODB_URI=mongodb://mongodb:27017/BIDDING_BOT
+      - NEXT_PUBLIC_API_KEY=d3348c68-097d-48b5-b5f0-0313cc05e92d
+      - NEXT_PUBLIC_RATE_LIMIT=100
+    depends_on:
+      - mongodb
+      - redis-node-1
+      - redis-node-2
+      - redis-node-3
+      - redis-node-4
+      - redis-node-5
+      - redis-node-6
+      - redis-node-7
+      - redis-node-8
+      - redis-node-9
+
   mongodb:
     image: mongo:latest
     container_name: mongodb_container
@@ -8,6 +37,51 @@ services:
       - "27017:27017"
     volumes:
       - mongo_data:/data/db
+
+  redis-node-1:
+    image: redis:latest
+    ports:
+      - "8001:6379"
+
+  redis-node-2:
+    image: redis:latest
+    ports:
+      - "8002:6379"
+
+  redis-node-3:
+    image: redis:latest
+    ports:
+      - "8003:6379"
+
+  redis-node-4:
+    image: redis:latest
+    ports:
+      - "8004:6379"
+
+  redis-node-5:
+    image: redis:latest
+    ports:
+      - "8005:6379"
+
+  redis-node-6:
+    image: redis:latest
+    ports:
+      - "8006:6379"
+
+  redis-node-7:
+    image: redis:latest
+    ports:
+      - "8007:6379"
+
+  redis-node-8:
+    image: redis:latest
+    ports:
+      - "8008:6379"
+
+  redis-node-9:
+    image: redis:latest
+    ports:
+      - "8009:6379"
 
 volumes:
   mongo_data:
