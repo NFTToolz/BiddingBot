@@ -32,6 +32,7 @@ export async function GET(
   const openseaOrders = openseaOrderKeys.length
     ? await redis.mget(openseaOrderKeys)
     : [];
+
   const blurOrders = blurOrderKeys.length
     ? await redis.mget(blurOrderKeys)
     : [];
@@ -45,145 +46,123 @@ export async function GET(
   const offers = [];
 
   if (bidType === "TOKEN" || bidType === "COLLECTION") {
-    const magicedenBids = await Promise.all(
-      magicedenOrders.map(async (orderKey, index) => {
-        if (!orderKey) return null;
-        const parts = magicedenOrderKeys[index].split(":");
-        const bidCount = parts[1];
-        const orderData = JSON.parse(orderKey);
+    const magicedenBids = magicedenOrders.map((orderKey, index) => {
+      if (!orderKey) return null;
+      const parts = magicedenOrderKeys[index].split(":");
+      const bidCount = parts[1];
+      const orderData = JSON.parse(orderKey);
 
-        return {
-          key: magicedenOrderKeys[index],
-          value: orderData.payload,
-          ttl: await redis.ttl(magicedenOrderKeys[index]),
-          marketplace: "magiceden",
-          offerPrice: orderData.offer,
-          bidCount,
-          identifier: parts[parts.length - 1],
-        };
-      })
-    );
+      return {
+        key: magicedenOrderKeys[index],
+        value: orderData.payload,
+        marketplace: "magiceden",
+        offerPrice: orderData.offer,
+        createdAt: Number(orderData.createdAt),
+        bidCount,
+        identifier: parts[parts.length - 1],
+      };
+    });
 
-    const openseaBids = await Promise.all(
-      openseaOrders.map(async (orderKey, index) => {
-        if (!orderKey) return null;
-        const parts = openseaOrderKeys[index].split(":");
-        const bidCount = parts[1];
-        const orderData = JSON.parse(orderKey);
+    const openseaBids = openseaOrders.map((orderKey, index) => {
+      if (!orderKey) return null;
+      const parts = openseaOrderKeys[index].split(":");
+      const bidCount = parts[1];
+      const orderData = JSON.parse(orderKey);
 
-        return {
-          key: openseaOrderKeys[index],
-          value: orderData.orderId,
-          ttl: await redis.ttl(openseaOrderKeys[index]),
-          marketplace: "opensea",
-          offerPrice: orderData.offer,
-          bidCount,
-          identifier: parts[parts.length - 1],
-        };
-      })
-    );
+      return {
+        key: openseaOrderKeys[index],
+        value: orderData.orderId,
+        marketplace: "opensea",
+        offerPrice: orderData.offer,
+        createdAt: Number(orderData.createdAt),
+        bidCount,
+        identifier: parts[parts.length - 1],
+      };
+    });
 
-    const blurBids = await Promise.all(
-      blurOrders.map(async (orderKey, index) => {
-        if (!orderKey) return null;
-        const parts = blurOrderKeys[index].split(":");
-        const bidCount = parts[1];
-        const orderData = JSON.parse(orderKey);
+    const blurBids = blurOrders.map((orderKey, index) => {
+      if (!orderKey) return null;
+      const parts = blurOrderKeys[index].split(":");
+      const bidCount = parts[1];
+      const orderData = JSON.parse(orderKey);
 
-        return {
-          key: blurOrderKeys[index],
-          value: orderData.payload,
-          ttl: await redis.ttl(blurOrderKeys[index]),
-          marketplace: "blur",
-          offerPrice: orderData.offer,
-          bidCount,
-          identifier: parts[parts.length - 1],
-        };
-      })
-    );
+      return {
+        key: blurOrderKeys[index],
+        value: orderData.payload,
+        marketplace: "blur",
+        offerPrice: orderData.offer,
+        createdAt: Number(orderData.createdAt),
+        bidCount,
+        identifier: parts[parts.length - 1],
+      };
+    });
 
-    offers.push(
-      ...magicedenBids.filter((offer) => offer && offer.ttl > 0),
-      ...openseaBids.filter((offer) => offer && offer.ttl > 0),
-      ...blurBids.filter((offer) => offer && offer.ttl > 0)
-    );
+    offers.push(...magicedenBids, ...openseaBids, ...blurBids);
   } else if (bidType === "TRAIT") {
-    const magicedenBids = await Promise.all(
-      magicedenOrders.map(async (orderKey, index) => {
-        if (!orderKey) return null;
-        const parts = magicedenOrderKeys[index].split(":");
-        const bidCount = parts[1];
-        const orderData = JSON.parse(orderKey);
+    const magicedenBids = magicedenOrders.map((orderKey, index) => {
+      if (!orderKey) return null;
+      const parts = magicedenOrderKeys[index].split(":");
+      const bidCount = parts[1];
+      const orderData = JSON.parse(orderKey);
 
-        return {
-          key: magicedenOrderKeys[index],
-          value: orderData.payload,
-          ttl: await redis.ttl(magicedenOrderKeys[index]),
-          marketplace: "magiceden",
-          identifier: `${parts[5]}:${parts[6]}`,
-          offerPrice: orderData.offer,
-          bidCount,
-          traitType: parts[5],
-          traitValue: parts[6],
-        };
-      })
-    );
+      return {
+        key: magicedenOrderKeys[index],
+        value: orderData.payload,
+        marketplace: "magiceden",
+        identifier: `${parts[5]}:${parts[6]}`,
+        offerPrice: orderData.offer,
+        createdAt: Number(orderData.createdAt),
+        bidCount,
+        traitType: parts[5],
+        traitValue: parts[6],
+      };
+    });
 
-    const openseaBids = await Promise.all(
-      openseaOrders.map(async (orderKey, index) => {
-        if (!orderKey) return null;
-        const parts = openseaOrderKeys[index].split(":");
-        const bidCount = parts[1];
-        const orderData = JSON.parse(orderKey);
+    const openseaBids = openseaOrders.map((orderKey, index) => {
+      if (!orderKey) return null;
+      const parts = openseaOrderKeys[index].split(":");
+      const bidCount = parts[1];
+      const orderData = JSON.parse(orderKey);
 
-        return {
-          key: openseaOrderKeys[index],
-          value: orderData.orderId,
-          ttl: await redis.ttl(openseaOrderKeys[index]),
-          marketplace: "opensea",
-          identifier: `${parts[5]}:${parts[6]}`,
-          offerPrice: orderData.offer,
-          bidCount,
-          traitType: parts[5],
-          traitValue: parts[6],
-        };
-      })
-    );
+      return {
+        key: openseaOrderKeys[index],
+        value: orderData.orderId,
+        marketplace: "opensea",
+        identifier: `${parts[5]}:${parts[6]}`,
+        offerPrice: orderData.offer,
+        createdAt: Number(orderData.createdAt),
+        bidCount,
+        traitType: parts[5],
+        traitValue: parts[6],
+      };
+    });
 
-    const blurBids = await Promise.all(
-      blurOrders.map(async (orderKey, index) => {
-        if (!orderKey) return null;
-        const parts = blurOrderKeys[index].split(":");
-        const bidCount = parts[1];
-        const orderData = JSON.parse(orderKey);
+    const blurBids = blurOrders.map((orderKey, index) => {
+      if (!orderKey) return null;
+      const parts = blurOrderKeys[index].split(":");
+      const bidCount = parts[1];
+      const orderData = JSON.parse(orderKey);
 
-        return {
-          key: blurOrderKeys[index],
-          value: orderData.payload,
-          ttl: await redis.ttl(blurOrderKeys[index]),
-          marketplace: "blur",
-          identifier: `${parts[5]}:${parts[6]}`,
-          offerPrice: orderData.offer,
-          bidCount,
-          traitType: parts[5],
-          traitValue: parts[6],
-        };
-      })
-    );
-    offers.push(
-      ...magicedenBids.filter((offer) => offer && offer.ttl > 0),
-      ...openseaBids.filter((offer) => offer && offer.ttl > 0),
-      ...blurBids.filter((offer) => offer && offer.ttl > 0)
-    );
-    offers.sort((a: any, b: any) => a.ttl - b.ttl);
+      return {
+        key: blurOrderKeys[index],
+        value: orderData.payload,
+        marketplace: "blur",
+        identifier: `${parts[5]}:${parts[6]}`,
+        offerPrice: orderData.offer,
+        createdAt: Number(orderData.createdAt),
+        bidCount,
+        traitType: parts[5],
+        traitValue: parts[6],
+      };
+    });
+
+    offers.push(...magicedenBids, ...openseaBids, ...blurBids);
+    offers.sort((a: any, b: any) => a.createdAt - b.createdAt);
   }
 
   if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+
   return NextResponse.json(offers, { status: 200 });
 }
-
-// MAGICEDEN TRAIT
-// orderKey: '677026c80d9933cecf91315b:258:magiceden:order:azuki:Offhand:Hand Wrap',
-// offerKey: '677026c80d9933cecf91315b:258:magiceden:azuki:Offhand:Hand Wrap'

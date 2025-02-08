@@ -11,6 +11,7 @@ import { useCallback, useState } from "react";
 import useSWR from "swr";
 import { toast } from "react-toastify";
 import Link from "next/link";
+import { formatDistanceToNow } from "date-fns";
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
@@ -79,11 +80,10 @@ export default function Page({ params }: { params: { slug: string } }) {
 
   const filteredLogs =
     logs?.filter((log) => {
-      console.log("Filtering log:", log, "activeTab:", activeTab);
       return (
         log.type === activeTab &&
         (selectedMarketplaces.length === 0 ||
-          selectedMarketplaces.includes(log.marketplace as Marketplace))
+          selectedMarketplaces.includes(log?.marketplace as Marketplace))
       );
     }) || [];
 
@@ -98,13 +98,13 @@ export default function Page({ params }: { params: { slug: string } }) {
   };
 
   const toggleBid = (key: string) => {
-    const offer = data.find((item) => item.key === key);
+    const offer = data.find((item) => item?.key === key);
     if (!offer) return;
 
     setSelectedBids((prev) => {
-      const isSelected = prev.some((task) => task.key === key);
+      const isSelected = prev.some((task) => task?.key === key);
       const newSelection = isSelected
-        ? prev.filter((task) => task.key !== key)
+        ? prev.filter((task) => task?.key !== key)
         : [...prev, offer];
       setSelectAll(newSelection.length === data.length);
       return newSelection;
@@ -118,7 +118,7 @@ export default function Page({ params }: { params: { slug: string } }) {
   const filteredBids = data?.filter(
     (bid) =>
       selectedMarketplaces.length === 0 ||
-      selectedMarketplaces.includes(bid.marketplace as Marketplace)
+      selectedMarketplaces.includes(bid?.marketplace as Marketplace)
   );
 
   const totalPages =
@@ -430,13 +430,14 @@ export default function Page({ params }: { params: { slug: string } }) {
                   offer price
                 </th>
                 <th scope="col" className="px-6 py-3 text-left">
-                  Expires In
+                  Created
                 </th>
               </tr>
             </thead>
             <tbody>
               {currentBids &&
-                currentBids?.length > 0 &&
+                currentBids?.sort((a, b) => b?.createdAt - a?.createdAt)
+                  .length > 0 &&
                 currentBids?.map((bid, index) => {
                   return (
                     <tr
@@ -450,22 +451,22 @@ export default function Page({ params }: { params: { slug: string } }) {
                             type="checkbox"
                             className="sr-only"
                             checked={selectedBids
-                              .map((offer) => offer.key)
-                              .includes(bid.key)}
-                            onChange={() => toggleBid(bid.key)}
+                              .map((offer) => offer?.key)
+                              .includes(bid?.key)}
+                            onChange={() => toggleBid(bid?.key)}
                           />
                           <div
                             className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-colors duration-200 ease-in-out ${
                               selectedBids
-                                .map((offer) => offer.key)
-                                .includes(bid.key)
+                                .map((offer) => offer?.key)
+                                .includes(bid?.key)
                                 ? "bg-[#7F56D9] border-[#7F56D9]"
                                 : "bg-transparent border-gray-400"
                             }`}
                           >
                             {selectedBids
-                              .map((offer) => offer.key)
-                              .includes(bid.key) && (
+                              .map((offer) => offer?.key)
+                              .includes(bid?.key) && (
                               <svg
                                 className="w-3 h-3 text-white"
                                 viewBox="0 0 16 16"
@@ -485,19 +486,19 @@ export default function Page({ params }: { params: { slug: string } }) {
                         </label>
                       </td>
                       <td className="py-2 px-2 sm:px-4 text-left flex items-center justify-start sm:table-cell">
-                        <div className="flex gap-2 items-center justify-center">
+                        <div className="flex gap-2 items-center justify-start">
                           <span
                             className={`w-4 h-4 rounded-full ${
-                              bid.marketplace === "opensea"
+                              bid?.marketplace === "opensea"
                                 ? "bg-[#2081e2]"
-                                : bid.marketplace === "blur"
+                                : bid?.marketplace === "blur"
                                 ? "bg-[#FF8700]"
-                                : bid.marketplace === "magiceden"
+                                : bid?.marketplace === "magiceden"
                                 ? "bg-[#e42575]"
                                 : ""
                             }`}
                           ></span>
-                          <div>{bid.marketplace}</div>
+                          <div>{bid?.marketplace}</div>
                         </div>
                       </td>
                       <td className="px-2 sm:px-6 py-2 sm:py-4 text-left flex items-end justify-start gap-2 flex-row">
@@ -526,11 +527,15 @@ export default function Page({ params }: { params: { slug: string } }) {
                         </div>
                       </td>
                       <td className="px-2 sm:px-6 py-2 sm:py-4 text-left flex items-center justify-between sm:table-cell">
-                        {Number(bid.offerPrice) / 1e18}{" "}
-                        {bid.marketplace === "blur" ? "BETH" : "WETH"}
+                        {Number(bid?.offerPrice) / 1e18}{" "}
+                        {bid?.marketplace === "blur" ? "BETH" : "WETH"}
                       </td>
                       <td className="px-2 sm:px-6 py-2 sm:py-4 text-left flex items-center justify-between sm:table-cell">
-                        {formatTimeRemaining(bid.ttl)}
+                        <span title={new Date(bid?.createdAt).toLocaleString()}>
+                          {formatDistanceToNow(new Date(bid?.createdAt), {
+                            addSuffix: true,
+                          })}
+                        </span>
                       </td>
                     </tr>
                   );
@@ -570,16 +575,16 @@ export default function Page({ params }: { params: { slug: string } }) {
                       <div className="flex gap-2 items-center justify-center">
                         <span
                           className={`w-4 h-4 rounded-full ${
-                            log.marketplace === "opensea"
+                            log?.marketplace === "opensea"
                               ? "bg-[#2081e2]"
-                              : log.marketplace === "blur"
+                              : log?.marketplace === "blur"
                               ? "bg-[#FF8700]"
-                              : log.marketplace === "magiceden"
+                              : log?.marketplace === "magiceden"
                               ? "bg-[#e42575]"
                               : ""
                           }`}
                         ></span>
-                        <div>{log.marketplace}</div>
+                        <div>{log?.marketplace}</div>
                       </div>
                     </td>
                     <td className="px-2 sm:px-6 py-2 sm:py-4 text-left">
@@ -589,7 +594,7 @@ export default function Page({ params }: { params: { slug: string } }) {
                       {log.message}
                     </td>
                     <td className="px-2 sm:px-6 py-2 sm:py-4 text-left">
-                      {new Date(log.createdAt).toLocaleString()}
+                      {new Date(log?.createdAt).toLocaleString()}
                     </td>
                   </tr>
                 ))}
@@ -667,7 +672,7 @@ export default function Page({ params }: { params: { slug: string } }) {
 interface OfferData {
   key: string;
   value: string;
-  ttl: number;
+  createdAt: number;
   marketplace: string;
   identifier: any;
   offerPrice: string;
