@@ -18,3 +18,9 @@ coverage
 .husky
 .huskyrc
 .huskyrc.* 
+
+node_modules
+.git
+.next
+*.md
+.env*

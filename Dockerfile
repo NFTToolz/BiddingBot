@@ -1,36 +1,33 @@
 # Build stage
 FROM node:20-alpine AS builder
-RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
-# Copy package files
+# Install dependencies first (better layer caching)
 COPY package*.json ./
+RUN npm ci --only=production --no-audit --no-optional --verbose
 
-# Install all dependencies
-RUN npm ci
+# Copy Next.js and Tailwind CSS configuration files
+COPY next.config.mjs ./
+COPY tailwind.config.ts ./
+COPY postcss.config.mjs ./
+COPY tsconfig.json ./
+COPY .eslintrc.json ./
 
-# Copy source files
+# Copy source files and build
 COPY . .
-
-# Build the application
 RUN npm run build
 
 # Production stage
 FROM node:20-alpine AS runner
 WORKDIR /app
 
-# Copy package files for production
-COPY package*.json ./
-
-# Install only production dependencies
-RUN npm ci --only=production
-
-# Copy built files from builder stage
+# Only copy necessary files
+COPY --from=builder /app/package*.json ./
 COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/node_modules ./node_modules
 
-# Create and set up the user
+# Create non-root user
 RUN adduser -D -u 1001 app
 USER app
 

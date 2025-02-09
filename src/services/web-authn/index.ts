@@ -62,20 +62,6 @@ export class WebAuthn {
     }
   }
 
-  public static async deriveKeysFromRawId(
-    rawId: Hex
-  ): Promise<{ x: Hex; y: Hex }> {
-    const rawIdBuffer = Buffer.from(rawId.slice(2), "hex");
-    const hash = crypto.createHash("sha256").update(rawIdBuffer).digest();
-
-    const x = toHex(hash.slice(0, 32));
-
-    const yHash = crypto.createHash("sha256").update(hash).digest();
-    const y = toHex(yHash.slice(0, 32));
-
-    return { x, y };
-  }
-
   public static async create({
     username,
   }: {
