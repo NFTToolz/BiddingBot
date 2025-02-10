@@ -1,35 +1,39 @@
 # Build stage
 FROM node:20-alpine AS builder
+
+
+RUN apk add --no-cache ca-certificates
+
+# Set working directory
 WORKDIR /app
 
-# Install dependencies first (better layer caching)
+# Copy package files
 COPY package*.json ./
-RUN npm ci --only=production --no-audit --no-optional --verbose
 
-# Copy Next.js and Tailwind CSS configuration files
-COPY next.config.mjs ./
-COPY tailwind.config.ts ./
-COPY postcss.config.mjs ./
-COPY tsconfig.json ./
-COPY .eslintrc.json ./
+# Install dependencies
+RUN npm ci
 
-# Copy source files and build
+# Copy source files
 COPY . .
+
+# Build the application
 RUN npm run build
 
 # Production stage
 FROM node:20-alpine AS runner
+
 WORKDIR /app
 
-# Only copy necessary files
+# Copy necessary files from builder
 COPY --from=builder /app/package*.json ./
 COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/node_modules ./node_modules
 
-# Create non-root user
-RUN adduser -D -u 1001 app
-USER app
+# Set environment variables
+ENV NODE_ENV=production
+ENV PORT=3001
 
 EXPOSE 3001
-CMD ["npm", "run", "start"]
+
+CMD ["npm", "start"]
