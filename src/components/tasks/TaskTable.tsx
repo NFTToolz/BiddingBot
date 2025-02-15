@@ -9,6 +9,7 @@ import { useTaskStore } from "@/store/task.store";
 import { toast } from "react-toastify";
 import DeleteModal from "./DeleteTaskModal";
 import { BidStats, WarningBids } from "@/app/context/WebSocketContext";
+import Duplicate from "@/assets/svg/Duplicate";
 
 const GENERAL_BID_PRICE = "GENERAL_BID_PRICE";
 const MARKETPLACE_BID_PRICE = "MARKETPLACE_BID_PRICE";
@@ -44,11 +45,18 @@ const TaskTable: React.FC<TaskTableProps> = ({
   errorBids,
   sendMessage,
   bidStats,
+  onDuplicateTask,
 }) => {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [taskToDelete, setTaskToDelete] = useState<Task | null>(null);
-
   const { deleteTask, deleteImportedTask } = useTaskStore();
+
+  // Add state to track enabled marketplaces at header level
+  const [enabledMarketplaces, setEnabledMarketplaces] = useState<string[]>([
+    "OpenSea",
+    "Blur",
+    "MagicEden",
+  ]);
 
   const handleDeleteClick = (task: Task) => {
     setTaskToDelete(task);
@@ -143,22 +151,6 @@ const TaskTable: React.FC<TaskTableProps> = ({
     }
     return task.bidType.toUpperCase();
   };
-
-  // Get unique slugs of running tasks
-  const runningTaskSlugs = useMemo(
-    () =>
-      Array.from(
-        new Set(
-          tasks
-            .filter((task) => task.running)
-            .map((task) => ({
-              slug: task.contract.slug,
-              contractAddress: task.contract.contractAddress,
-            }))
-        )
-      ),
-    [tasks]
-  );
 
   return (
     <>
@@ -337,39 +329,33 @@ const TaskTable: React.FC<TaskTableProps> = ({
                                     : "Blur"}
                                 </span>
                                 <Toggle
-                                  checked={tasks.every((task) =>
-                                    task.selectedMarketplaces.includes(
+                                  checked={enabledMarketplaces.includes(
+                                    marketplace === "opensea"
+                                      ? "OpenSea"
+                                      : marketplace === "magiceden"
+                                      ? "MagicEden"
+                                      : "Blur"
+                                  )}
+                                  onChange={() => {
+                                    const marketplaceName =
                                       marketplace === "opensea"
                                         ? "OpenSea"
                                         : marketplace === "magiceden"
                                         ? "MagicEden"
-                                        : "Blur"
-                                    )
-                                  )}
-                                  onChange={() => {
-                                    // Check if all tasks have this marketplace selected
-                                    const isAllSelected = tasks.every((task) =>
-                                      task.selectedMarketplaces.includes(
-                                        marketplace === "opensea"
-                                          ? "OpenSea"
-                                          : marketplace === "magiceden"
-                                          ? "MagicEden"
-                                          : "Blur"
+                                        : "Blur";
+
+                                    if (
+                                      enabledMarketplaces.includes(
+                                        marketplaceName
                                       )
-                                    );
-
-                                    // Toggle all tasks based on current state
-                                    tasks.forEach((task) => {
-                                      const marketplaceName =
-                                        marketplace === "opensea"
-                                          ? "OpenSea"
-                                          : marketplace === "magiceden"
-                                          ? "MagicEden"
-                                          : "Blur";
-
-                                      // If all are selected, remove the marketplace from all tasks
-                                      // If not all are selected, add the marketplace to all tasks
-                                      if (isAllSelected) {
+                                    ) {
+                                      // Disable marketplace and remove it from all tasks
+                                      setEnabledMarketplaces((prev) =>
+                                        prev.filter(
+                                          (m) => m !== marketplaceName
+                                        )
+                                      );
+                                      tasks.forEach((task) => {
                                         if (
                                           task.selectedMarketplaces.includes(
                                             marketplaceName
@@ -380,19 +366,14 @@ const TaskTable: React.FC<TaskTableProps> = ({
                                             marketplaceName
                                           );
                                         }
-                                      } else {
-                                        if (
-                                          !task.selectedMarketplaces.includes(
-                                            marketplaceName
-                                          )
-                                        ) {
-                                          onToggleMarketplace(
-                                            task._id,
-                                            marketplaceName
-                                          );
-                                        }
-                                      }
-                                    });
+                                      });
+                                    } else {
+                                      // Enable marketplace at header level only
+                                      setEnabledMarketplaces((prev) => [
+                                        ...prev,
+                                        marketplaceName,
+                                      ]);
+                                    }
                                   }}
                                   activeColor={
                                     marketplace === "opensea"
@@ -426,6 +407,9 @@ const TaskTable: React.FC<TaskTableProps> = ({
                   Edit
                 </th>
                 <th scope="col" className="px-3 py-3 text-center w-[80px]">
+                  Duplicate
+                </th>
+                <th scope="col" className="px-3 py-3 text-center w-[80px]">
                   Delete
                 </th>
               </tr>
@@ -433,7 +417,6 @@ const TaskTable: React.FC<TaskTableProps> = ({
             <tbody>
               {(isVerificationMode ? tasks : mergedTasks)?.map(
                 (task: Task | MergedTask) => {
-                  console.log({ task });
                   return (
                     <tr
                       key={task._id}
@@ -597,6 +580,9 @@ const TaskTable: React.FC<TaskTableProps> = ({
                                       ].toFixed(3)
                                     : 0;
 
+                                  const isMarketplaceEnabled =
+                                    enabledMarketplaces.includes(marketplace);
+
                                   let minValue, maxValue;
                                   let bidPrice;
 
@@ -679,7 +665,9 @@ const TaskTable: React.FC<TaskTableProps> = ({
                                     <div
                                       key={`price-${marketplace}`}
                                       className={`flex justify-between px-3 py-2 rounded ${
-                                        marketplaceKey === "opensea"
+                                        !isMarketplaceEnabled
+                                          ? "bg-gray-700/20 opacity-50"
+                                          : marketplaceKey === "opensea"
                                           ? "bg-[#2081e2]/10"
                                           : marketplaceKey === "blur"
                                           ? "bg-[#FF8700]/10"
@@ -695,10 +683,9 @@ const TaskTable: React.FC<TaskTableProps> = ({
                                             : "text-[#e42575]"
                                         }`}
                                       >
-                                        {marketplace.toLowerCase() === "opensea"
+                                        {marketplace === "OpenSea"
                                           ? "OS"
-                                          : marketplace.toLowerCase() ===
-                                            "magiceden"
+                                          : marketplace === "MagicEden"
                                           ? "ME"
                                           : marketplace}
                                       </div>
@@ -786,6 +773,23 @@ const TaskTable: React.FC<TaskTableProps> = ({
                                         <Toggle
                                           checked={isSelected}
                                           onChange={() => {
+                                            const marketplaceName =
+                                              marketplace === "opensea"
+                                                ? "OpenSea"
+                                                : marketplace === "magiceden"
+                                                ? "MagicEden"
+                                                : "Blur";
+
+                                            // Only allow toggling ON if marketplace is enabled at header level
+                                            if (
+                                              !isSelected &&
+                                              !enabledMarketplaces.includes(
+                                                marketplaceName
+                                              )
+                                            ) {
+                                              return;
+                                            }
+
                                             if (
                                               marketplace === "blur" &&
                                               !task.selectedMarketplaces.includes(
@@ -795,13 +799,10 @@ const TaskTable: React.FC<TaskTableProps> = ({
                                                 task.bidType === "token")
                                             )
                                               return;
+
                                             onToggleMarketplace(
                                               task._id,
-                                              marketplace === "opensea"
-                                                ? "OpenSea"
-                                                : marketplace === "magiceden"
-                                                ? "MagicEden"
-                                                : "Blur"
+                                              marketplaceName
                                             );
                                           }}
                                           activeColor={
@@ -829,7 +830,56 @@ const TaskTable: React.FC<TaskTableProps> = ({
                                                     | "blur"
                                                     | "magiceden"
                                                 ]
-                                              : 0}
+                                              : 0}{" "}
+                                            /{" "}
+                                            {(() => {
+                                              const bidType = getBidType(task);
+                                              if (bidType === "COLLECTION")
+                                                return 1;
+                                              if (bidType === "TOKEN") {
+                                                // Handle bot pattern (e.g., bot100)
+                                                const botPattern =
+                                                  task.tokenIds.find((id) =>
+                                                    /^bot\d+$/.test(
+                                                      id.toString()
+                                                    )
+                                                  );
+                                                if (
+                                                  botPattern &&
+                                                  typeof botPattern === "string"
+                                                ) {
+                                                  const botNumber = parseInt(
+                                                    botPattern.replace(
+                                                      "bot",
+                                                      ""
+                                                    )
+                                                  );
+                                                  // Sum explicit token IDs (excluding bot pattern) and bot number
+                                                  const explicitTokens =
+                                                    task.tokenIds.filter(
+                                                      (id) =>
+                                                        !/^bot\d+$/.test(
+                                                          id.toString()
+                                                        )
+                                                    ).length;
+                                                  return (
+                                                    explicitTokens + botNumber
+                                                  );
+                                                }
+                                                // If no bot pattern, just count token IDs
+                                                return task.tokenIds.length;
+                                              }
+                                              if (bidType === "TRAIT") {
+                                                return Object.values(
+                                                  task.selectedTraits || {}
+                                                ).reduce(
+                                                  (total, traits) =>
+                                                    total + traits.length,
+                                                  0
+                                                );
+                                              }
+                                              return 0;
+                                            })()}
                                           </span>
                                         </div>
                                         <span className="opacity-50">|</span>
@@ -867,44 +917,44 @@ const TaskTable: React.FC<TaskTableProps> = ({
                                                 ]
                                               : 0}
                                           </span>
-                                        </div>
 
-                                        {isMergedTask(task) &&
-                                          task.bidStats.warningBids[task._id][
-                                            marketplace as
-                                              | "opensea"
-                                              | "blur"
-                                              | "magiceden"
-                                          ] && (
-                                            <>
-                                              <span className="opacity-50">
-                                                |
-                                              </span>
-                                              <span className="opacity-70 flex items-center gap-1">
-                                                <div className="relative group">
-                                                  <svg
-                                                    width="16"
-                                                    height="16"
-                                                    viewBox="0 0 24 24"
-                                                    fill="none"
-                                                    stroke="#ef4444"
-                                                    strokeWidth="2"
-                                                    className="cursor-help"
-                                                  >
-                                                    <path
-                                                      strokeLinecap="round"
-                                                      strokeLinejoin="round"
-                                                      d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"
-                                                    />
-                                                  </svg>
-                                                  <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 whitespace-nowrap">
-                                                    Task stopped: Floor price
-                                                    below stop amount
+                                          {isMergedTask(task) &&
+                                            task.bidStats.warningBids[task._id][
+                                              marketplace as
+                                                | "opensea"
+                                                | "blur"
+                                                | "magiceden"
+                                            ] && (
+                                              <>
+                                                <span className="opacity-50">
+                                                  |
+                                                </span>
+                                                <span className="opacity-70 flex items-center gap-1">
+                                                  <div className="relative group">
+                                                    <svg
+                                                      width="16"
+                                                      height="16"
+                                                      viewBox="0 0 24 24"
+                                                      fill="none"
+                                                      stroke="#ef4444"
+                                                      strokeWidth="2"
+                                                      className="cursor-help"
+                                                    >
+                                                      <path
+                                                        strokeLinecap="round"
+                                                        strokeLinejoin="round"
+                                                        d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"
+                                                      />
+                                                    </svg>
+                                                    <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 whitespace-nowrap">
+                                                      Task stopped: Floor price
+                                                      below stop amount
+                                                    </div>
                                                   </div>
-                                                </div>
-                                              </span>
-                                            </>
-                                          )}
+                                                </span>
+                                              </>
+                                            )}
+                                        </div>
                                       </div>
                                     </div>
                                   );
@@ -972,6 +1022,18 @@ const TaskTable: React.FC<TaskTableProps> = ({
                         </div>
                       </td>
                       <td className="px-3 py-4 text-center w-[80px]">
+                        <span className="sm:hidden font-bold">Edit</span>
+                        <div className="flex items-center justify-end sm:justify-center">
+                          <button
+                            onClick={() => {
+                              onDuplicateTask(task);
+                            }}
+                          >
+                            <Duplicate />
+                          </button>
+                        </div>
+                      </td>
+                      <td className="px-3 py-4 text-center w-[80px]">
                         <span className="sm:hidden font-bold">Delete</span>
                         <div className="flex items-center justify-end sm:justify-center">
                           <button onClick={() => handleDeleteClick(task)}>
@@ -1025,6 +1087,7 @@ interface TaskTableProps {
   onToggleTaskStatus: (taskId: string) => void;
   onToggleMarketplace: (taskId: string, marketplace: string) => void;
   onEditTask: (task: Task) => void;
+  onDuplicateTask: (task: Task) => void;
   filterText: string;
   selectedTags: Tag[];
   selectedBidTypes?: ("COLLECTION" | "TOKEN" | "TRAIT")[]; // Make this prop optional
@@ -1048,6 +1111,7 @@ interface TaskTableProps {
     magiceden: number;
   };
   sendMessage?: (message: any) => void;
+  setIsModalOpen?: (isModalOpen: boolean) => void;
 }
 
 export interface MergedTask extends Task {

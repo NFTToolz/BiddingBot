@@ -36,6 +36,7 @@ interface TaskModalProps {
   initialTask: Task | null;
   isVerificationMode?: boolean;
   isImportedTask?: boolean;
+  duplicateTask?: Task | null;
 }
 
 const TaskModal: React.FC<TaskModalProps> = ({
@@ -45,6 +46,7 @@ const TaskModal: React.FC<TaskModalProps> = ({
   initialTask,
   isVerificationMode = false,
   isImportedTask = false,
+  duplicateTask,
 }) => {
   const { wallets } = useWalletStore();
   const { addTag } = useTagStore();
@@ -67,7 +69,94 @@ const TaskModal: React.FC<TaskModalProps> = ({
     debouncedValidateSlug,
     validateSlug, // Add this
   } = useTaskForm(
-    initialTask
+    duplicateTask
+      ? {
+          contract: {
+            slug: duplicateTask.contract.slug,
+            contractAddress: duplicateTask.contract.contractAddress,
+          },
+          selectedMarketplaces: duplicateTask.selectedMarketplaces,
+          running: duplicateTask.running,
+          tags: duplicateTask.tags,
+          selectedTraits: duplicateTask.selectedTraits,
+          traits: duplicateTask.traits || { categories: {}, counts: {} },
+          outbidOptions: {
+            outbid: duplicateTask.outbidOptions.outbid,
+            blurOutbidMargin:
+              duplicateTask.outbidOptions.blurOutbidMargin?.toString() || "",
+            openseaOutbidMargin:
+              duplicateTask.outbidOptions.openseaOutbidMargin?.toString() || "",
+            magicedenOutbidMargin:
+              duplicateTask.outbidOptions.magicedenOutbidMargin?.toString() ||
+              "",
+            counterbid: duplicateTask.outbidOptions.counterbid,
+          },
+          stopOptions: {
+            minFloorPrice:
+              duplicateTask.stopOptions.minFloorPrice?.toString() || "",
+            maxFloorPrice:
+              duplicateTask.stopOptions.maxFloorPrice?.toString() || "",
+            minTraitPrice:
+              duplicateTask.stopOptions.minTraitPrice?.toString() || "",
+            maxTraitPrice:
+              duplicateTask.stopOptions.maxTraitPrice?.toString() || "",
+            maxPurchase:
+              duplicateTask.stopOptions.maxPurchase?.toString() || "",
+            pauseAllBids: duplicateTask.stopOptions.pauseAllBids,
+            stopAllBids: duplicateTask.stopOptions.stopAllBids,
+            cancelAllBids: duplicateTask.stopOptions.cancelAllBids,
+            triggerStopOptions: duplicateTask.stopOptions.triggerStopOptions,
+          },
+          bidPrice: {
+            min: duplicateTask.bidPrice.min?.toString() || "",
+            max: duplicateTask.bidPrice.max?.toString() || "",
+            minType: duplicateTask.bidPrice.minType || "percentage",
+            maxType: duplicateTask.bidPrice.maxType || "percentage",
+          },
+          openseaBidPrice: {
+            min: duplicateTask.openseaBidPrice.min?.toString() || "",
+            max: duplicateTask.openseaBidPrice.max?.toString() || "",
+            minType: duplicateTask.openseaBidPrice.minType || "percentage",
+            maxType: duplicateTask.openseaBidPrice.maxType || "percentage",
+          },
+          blurBidPrice: {
+            min: duplicateTask.blurBidPrice.min?.toString() || "",
+            max: duplicateTask.blurBidPrice.max?.toString() || "",
+            minType: duplicateTask.blurBidPrice.minType || "percentage",
+            maxType: duplicateTask.blurBidPrice.maxType || "percentage",
+          },
+          magicEdenBidPrice: {
+            min: duplicateTask.magicEdenBidPrice.min?.toString() || "",
+            max: duplicateTask.magicEdenBidPrice.max?.toString() || "",
+            minType: duplicateTask.magicEdenBidPrice.minType || "percentage",
+            maxType: duplicateTask.magicEdenBidPrice.maxType || "percentage",
+          },
+          wallet: {
+            address: duplicateTask.wallet.address || "",
+            privateKey: duplicateTask.wallet.privateKey || "",
+            openseaApproval: duplicateTask.wallet.openseaApproval || false,
+            magicedenApproval: duplicateTask.wallet.magicedenApproval || false,
+            blurApproval: duplicateTask.wallet.blurApproval || false,
+          },
+          bidDuration: duplicateTask.bidDuration || {
+            value: 15,
+            unit: "minutes",
+          },
+          loopInterval: duplicateTask.loopInterval || {
+            value: 15,
+            unit: "minutes",
+          },
+          tokenIds: duplicateTask.tokenIds || [],
+          bidType: duplicateTask.bidType,
+          bidPriceType: duplicateTask.bidPriceType,
+          blurFloorPrice: null,
+          balance: 0,
+          magicedenFloorPrice: null,
+          openseaFloorPrice: null,
+          validatingSlug: false,
+          validationComplete: false,
+        }
+      : initialTask
       ? {
           contract: {
             slug: initialTask.contract.slug,
@@ -223,7 +312,8 @@ const TaskModal: React.FC<TaskModalProps> = ({
           validatingSlug: false,
           validationComplete: false,
         },
-    taskId
+    taskId,
+    duplicateTask as Task | undefined
   );
 
   // Add this useEffect to handle initialTask changes
@@ -369,19 +459,19 @@ const TaskModal: React.FC<TaskModalProps> = ({
       blurBidPrice,
       magicEdenBidPrice,
       selectedMarketplaces,
-      slugValid,
     } = formState;
-    return (
+
+    const isFormValid =
       contract.slug &&
-      slugValid &&
       contract.contractAddress &&
       wallet.address &&
       (bidPrice.min ||
         openseaBidPrice.min ||
         blurBidPrice.min ||
         magicEdenBidPrice.min) &&
-      selectedMarketplaces.length > 0
-    );
+      selectedMarketplaces.length > 0;
+
+    return isFormValid;
   };
 
   const onSubmit = async (e: React.FormEvent) => {
@@ -547,6 +637,7 @@ const TaskModal: React.FC<TaskModalProps> = ({
     // Add a ref to track if we should fetch tokens
     const shouldFetchTokens =
       formState.bidType === "token" &&
+      formState.selectedTraits &&
       Object.keys(formState.selectedTraits).length > 0 &&
       (!taskId ||
         !isEqual(formState.selectedTraits, initialTask?.selectedTraits));
@@ -665,7 +756,11 @@ const TaskModal: React.FC<TaskModalProps> = ({
     >
       <form onSubmit={onSubmit} className="flex flex-col h-full">
         <h2 className="text-center text-xl font-bold mb-6 text-Brand/Brand-1">
-          {taskId ? "EDIT TASK" : "CREATE A NEW TASK"}
+          {duplicateTask && !taskId
+            ? "DUPLICATE TASK"
+            : taskId
+            ? "EDIT TASK"
+            : "CREATE A NEW TASK"}
         </h2>
 
         <div className="flex-grow pr-4 -mr-4">
@@ -754,7 +849,11 @@ const TaskModal: React.FC<TaskModalProps> = ({
                 : "hover:bg-Brand/Brand-2"
             }`}
           >
-            {taskId ? "Update Task" : "Create Task"}
+            {duplicateTask && !taskId
+              ? "Duplicate Task"
+              : taskId
+              ? "Update Task"
+              : "Create Task"}
           </button>
         </div>
       </form>

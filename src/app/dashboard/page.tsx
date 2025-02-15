@@ -5,7 +5,7 @@ import TaskModal from "@/components/tasks/TaskModal";
 import { useTaskStore, Task } from "@/store/task.store";
 import React from "react";
 import TaskTable from "@/components/tasks/TaskTable";
-import { BidInfo, WebSocketResponse } from "@/interface";
+import { BidInfo } from "@/interface";
 import TagFilter from "@/components/tasks/TagFilter";
 import { Tag } from "@/store/tag.store";
 import { BidStats, useWebSocket } from "@/app/context/WebSocketContext";
@@ -29,7 +29,6 @@ const processJSONImport = (jsonData: any): Partial<Task>[] => {
   if (Array.isArray(jsonData)) {
     return jsonData;
   }
-
   return [jsonData];
 };
 
@@ -45,6 +44,7 @@ const Tasks = () => {
   const [selectedTasks, setSelectedTasks] = useState<string[]>([]);
   const [selectAll, setSelectAll] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
+  const [duplicateTask, setDuplicateTask] = useState<Task | null>(null);
   const [bids, setBids] = useState<BidInfo[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [recordsPerPage, setRecordsPerPage] = useState(20);
@@ -260,6 +260,11 @@ const Tasks = () => {
 
   const openEditModal = React.useCallback((task: Task) => {
     setEditingTask(task);
+    setIsModalOpen(true);
+  }, []);
+
+  const onDuplicateTask = React.useCallback((task: Task) => {
+    setDuplicateTask(task);
     setIsModalOpen(true);
   }, []);
 
@@ -674,12 +679,15 @@ const Tasks = () => {
             sendMessage={sendMessage}
             bidStats={bidStats as BidStats}
             skipBids={skipBids}
+            setIsModalOpen={setIsModalOpen}
+            onDuplicateTask={onDuplicateTask}
           />
           <TaskModal
             isOpen={isModalOpen}
             onClose={closeModal}
             taskId={editingTask?._id}
             initialTask={editingTask}
+            duplicateTask={duplicateTask}
           />
           <DeleteModal
             isOpen={isDeleteModalOpen}

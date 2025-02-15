@@ -138,12 +138,14 @@ const TraitSelector: React.FC<TraitSelectorProps> = ({
     > = {};
 
     Object.keys(traits.categories).forEach((category) => {
-      allTraits[category] = Object.entries(traits.counts[category]).map(
-        ([trait, data]) => ({
-          name: trait,
-          availableInMarketplaces: data.availableInMarketplaces,
-        })
-      );
+      if (traits.counts[category]) {
+        allTraits[category] = Object.entries(traits.counts[category]).map(
+          ([trait, data]) => ({
+            name: trait,
+            availableInMarketplaces: data.availableInMarketplaces,
+          })
+        );
+      }
     });
 
     setSelectedTraits(allTraits);

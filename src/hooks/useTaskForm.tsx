@@ -11,7 +11,8 @@ export const useTaskForm = (
     TaskFormState,
     "slugValid" | "slugDirty" | "magicEdenValid" | "blurValid" | "openseaValid"
   >,
-  taskId?: string
+  taskId?: string,
+  duplicateTask?: Task
 ) => {
   const { sendMessage } = useWebSocket();
   const { addTask, editTask, tasks } = useTaskStore();
@@ -499,21 +500,20 @@ export const useTaskForm = (
           addTask(fetchedTask);
           sendMessage(message);
           toast.success("Task created successfully");
-
-          setFormState({
-            ...initialState,
-            slugValid: false,
-            blurValid: false,
-            openseaValid: false,
-            magicEdenValid: false,
-            slugDirty: false,
-            blurFloorPrice: null,
-            balance: 0,
-            magicedenFloorPrice: null,
-            openseaFloorPrice: null,
-            validatingSlug: false,
-          });
         }
+        setFormState({
+          ...initialState,
+          slugValid: false,
+          blurValid: false,
+          openseaValid: false,
+          magicEdenValid: false,
+          slugDirty: false,
+          blurFloorPrice: null,
+          balance: 0,
+          magicedenFloorPrice: null,
+          openseaFloorPrice: null,
+          validatingSlug: false,
+        });
         return true;
       } catch (error) {
         console.error("Error submitting task:", error);
