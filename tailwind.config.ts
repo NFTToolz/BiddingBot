@@ -1,5 +1,4 @@
 import type { Config } from "tailwindcss";
-import { fontFamily } from "tailwindcss/defaultTheme";
 import plugin from "tailwindcss/plugin";
 
 const config: Config = {
@@ -34,7 +33,7 @@ const config: Config = {
         n: {
           1: "#FFFFFF",
           2: "#CAC6DD",
-          3: "#www",
+          3: "#9691A4",
           4: "#757185",
           5: "#3F3A52",
           6: "#252134",
@@ -57,7 +56,6 @@ const config: Config = {
         "Accents/Red": "#E23738",
       },
       fontFamily: {
-        sans: ["var(--font-sora)", ...fontFamily.sans],
         code: "var(--font-code)",
         grotesk: "var(--font-grotesk)",
         poppins: "var(--font-poppins)",

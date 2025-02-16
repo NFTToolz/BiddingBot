@@ -1021,18 +1021,21 @@ const TaskTable: React.FC<TaskTableProps> = ({
                           </button>
                         </div>
                       </td>
-                      <td className="px-3 py-4 text-center w-[80px]">
-                        <span className="sm:hidden font-bold">Edit</span>
-                        <div className="flex items-center justify-end sm:justify-center">
-                          <button
-                            onClick={() => {
-                              onDuplicateTask(task);
-                            }}
-                          >
-                            <Duplicate />
-                          </button>
-                        </div>
-                      </td>
+
+                      {onDuplicateTask && (
+                        <td className="px-3 py-4 text-center w-[80px]">
+                          <span className="sm:hidden font-bold">Edit</span>
+                          <div className="flex items-center justify-end sm:justify-center">
+                            <button
+                              onClick={() => {
+                                onDuplicateTask(task);
+                              }}
+                            >
+                              <Duplicate />
+                            </button>
+                          </div>
+                        </td>
+                      )}
                       <td className="px-3 py-4 text-center w-[80px]">
                         <span className="sm:hidden font-bold">Delete</span>
                         <div className="flex items-center justify-end sm:justify-center">
@@ -1087,7 +1090,7 @@ interface TaskTableProps {
   onToggleTaskStatus: (taskId: string) => void;
   onToggleMarketplace: (taskId: string, marketplace: string) => void;
   onEditTask: (task: Task) => void;
-  onDuplicateTask: (task: Task) => void;
+  onDuplicateTask?: (task: Task) => void;
   filterText: string;
   selectedTags: Tag[];
   selectedBidTypes?: ("COLLECTION" | "TOKEN" | "TRAIT")[]; // Make this prop optional

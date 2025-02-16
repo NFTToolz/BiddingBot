@@ -31,6 +31,19 @@ function formatTimeRemaining(seconds: number): string {
   }
 }
 
+function formatCreatedAt(timestamp: number | string | undefined): string {
+  if (!timestamp) return "Unknown";
+
+  try {
+    const date = new Date(timestamp);
+    if (isNaN(date.getTime())) return "Invalid date";
+
+    return formatDistanceToNow(date, { addSuffix: true });
+  } catch (error) {
+    return "Invalid date";
+  }
+}
+
 export default function Page({ params }: { params: { slug: string } }) {
   const [selectAll, setSelectAll] = useState(false);
   const [selectedBids, setSelectedBids] = useState<OfferData[]>([]);
@@ -531,10 +544,14 @@ export default function Page({ params }: { params: { slug: string } }) {
                         {bid?.marketplace === "blur" ? "BETH" : "WETH"}
                       </td>
                       <td className="px-2 sm:px-6 py-2 sm:py-4 text-left flex items-center justify-between sm:table-cell">
-                        <span title={new Date(bid?.createdAt).toLocaleString()}>
-                          {formatDistanceToNow(new Date(bid?.createdAt), {
-                            addSuffix: true,
-                          })}
+                        <span
+                          title={
+                            bid?.createdAt
+                              ? new Date(bid.createdAt).toLocaleString()
+                              : "Unknown"
+                          }
+                        >
+                          {formatCreatedAt(bid?.createdAt)}
                         </span>
                       </td>
                     </tr>

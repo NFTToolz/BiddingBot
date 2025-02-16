@@ -32,6 +32,7 @@ export default function RootLayout({
 }>) {
   return (
     <html
+      data-theme="dark"
       lang="en"
       className={`${inter.variable} ${roboto_mono.variable}`}
       suppressHydrationWarning

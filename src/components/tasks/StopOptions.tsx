@@ -307,7 +307,6 @@ const StopOption = ({ formState, setFormState }: IStopOption) => {
                 value={formState.stopOptions.maxPurchase?.toString()}
                 placeholder="1"
                 className={`w-full p-3 rounded-lg border border-Neutral-BG-[night] bg-Neutral/Neutral-300-[night] `}
-                required
                 autoComplete="off"
               />
               <span>Held: {balance}</span>

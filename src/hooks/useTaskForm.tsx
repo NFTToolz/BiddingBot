@@ -518,6 +518,21 @@ export const useTaskForm = (
       } catch (error) {
         console.error("Error submitting task:", error);
         return false;
+      } finally {
+        setFormState({
+          ...initialState,
+          slugValid: false,
+          blurValid: false,
+          openseaValid: false,
+          magicEdenValid: false,
+          slugDirty: false,
+          blurFloorPrice: null,
+          balance: 0,
+          magicedenFloorPrice: null,
+          openseaFloorPrice: null,
+          validatingSlug: false,
+          validationComplete: false,
+        });
       }
     }
     return false;
