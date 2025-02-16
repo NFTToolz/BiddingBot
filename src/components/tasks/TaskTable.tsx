@@ -8,7 +8,11 @@ import DeleteIcon from "@/assets/svg/DeleteIcon";
 import { useTaskStore } from "@/store/task.store";
 import { toast } from "react-toastify";
 import DeleteModal from "./DeleteTaskModal";
-import { BidStats, WarningBids } from "@/app/context/WebSocketContext";
+import {
+  BidStats,
+  WarningBids,
+  WarningMessages,
+} from "@/app/context/WebSocketContext";
 import Duplicate from "@/assets/svg/Duplicate";
 
 const GENERAL_BID_PRICE = "GENERAL_BID_PRICE";
@@ -241,14 +245,36 @@ const TaskTable: React.FC<TaskTableProps> = ({
                 {totalBidsPerSecond.toFixed(1)}
               </span>
             </div>
+            {/* RPS display */}
+
+            <div className="flex items-center gap-4 mt-2">
+              <span className="text-gray-400 shrink-0">RPS:</span>
+              <div className="relative flex-1 bg-[#313442] h-4 rounded-full overflow-hidden">
+                <div
+                  className="bg-[#7F56D9] h-full rounded-full transition-all duration-300"
+                  style={{
+                    width: `${Math.min(
+                      100,
+                      ((bidStats?.rps?.currentRPS || 0) /
+                        (bidStats?.rps?.maxRPS || 1)) *
+                        100
+                    )}%`,
+                  }}
+                />
+              </div>
+              <span className="font-medium tabular-nums shrink-0 w-24 text-right">
+                {(bidStats?.rps?.currentRPS || 0).toFixed(1)} /{" "}
+                {bidStats?.rps?.maxRPS || 0}
+              </span>
+            </div>
           </div>
         </div>
       </div>
-      <div className="border rounded-2xl py-3 sm:py-5 px-2 sm:px-3 bg-[#1f2129] border-Neutral/Neutral-Border-[night] h-full">
+      <div className="border rounded-2xl py-3 sm:py-5 px-2 sm:px-3 bg-[#1f2129] border-[#313442] h-full">
         <div className="overflow-x-auto w-full">
           <table className="min-w-full table-fixed whitespace-nowrap text-sm">
             <thead className="hidden sm:table-header-group">
-              <tr className="border-b border-Neutral/Neutral-Border-[night]">
+              <tr className="border-b border-[#313442]">
                 <th scope="col" className="px-3 py-3 text-center w-[100px]">
                   <label className="inline-flex items-center cursor-pointer">
                     <input
@@ -368,11 +394,34 @@ const TaskTable: React.FC<TaskTableProps> = ({
                                         }
                                       });
                                     } else {
-                                      // Enable marketplace at header level only
+                                      // Enable marketplace at header level and add it to all tasks
                                       setEnabledMarketplaces((prev) => [
                                         ...prev,
                                         marketplaceName,
                                       ]);
+                                      tasks.forEach((task) => {
+                                        // For Blur marketplace, check additional conditions
+                                        if (marketplaceName === "Blur") {
+                                          if (
+                                            !task.blurValid ||
+                                            task.bidType === "token"
+                                          ) {
+                                            return;
+                                          }
+                                        }
+
+                                        // Only add if the marketplace isn't already selected
+                                        if (
+                                          !task.selectedMarketplaces.includes(
+                                            marketplaceName
+                                          )
+                                        ) {
+                                          onToggleMarketplace(
+                                            task._id,
+                                            marketplaceName
+                                          );
+                                        }
+                                      });
                                     }
                                   }}
                                   activeColor={
@@ -420,7 +469,7 @@ const TaskTable: React.FC<TaskTableProps> = ({
                   return (
                     <tr
                       key={task._id}
-                      className="border-b border-Neutral/Neutral-Border-[night] sm:table-row"
+                      className="border-b border-[#313442] sm:table-row"
                     >
                       <td className="px-3 py-4 text-center w-[100px]">
                         <label className="inline-flex items-center cursor-pointer">
@@ -462,7 +511,7 @@ const TaskTable: React.FC<TaskTableProps> = ({
                           <div className="px-3">
                             <Link
                               href={`/dashboard/tasks/${task._id}`}
-                              className="text-Brand/Brand-1 underline text-sm mb-2"
+                              className="text-[#7364DB] underline text-sm mb-2"
                             >
                               {task.contract.slug}
                             </Link>
@@ -946,9 +995,18 @@ const TaskTable: React.FC<TaskTableProps> = ({
                                                         d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"
                                                       />
                                                     </svg>
-                                                    <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 whitespace-nowrap">
-                                                      Task stopped: Floor price
-                                                      below stop amount
+                                                    <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 whitespace-nowrap z-[9999]">
+                                                      {
+                                                        task.bidStats
+                                                          .warningMessage[
+                                                          task._id
+                                                        ][
+                                                          marketplace as
+                                                            | "opensea"
+                                                            | "blur"
+                                                            | "magiceden"
+                                                        ]
+                                                      }
                                                     </div>
                                                   </div>
                                                 </span>
@@ -1001,7 +1059,7 @@ const TaskTable: React.FC<TaskTableProps> = ({
                             />
                             <div
                               className={`relative w-11 h-6 bg-gray-200 rounded-full transition-colors duration-200 ease-in-out ${
-                                task.running ? "!bg-Brand/Brand-1" : ""
+                                task.running ? "!bg-[#7364DB]" : ""
                               }`}
                             >
                               <div

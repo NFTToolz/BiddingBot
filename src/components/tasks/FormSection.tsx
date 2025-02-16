@@ -341,7 +341,7 @@ const FormSection: React.FC<FormSectionProps> = ({
           />
           <button
             onClick={onWalletModalOpen}
-            className="text-sm text-Brand/Brand-1 mt-0.5 ml-2 block italic"
+            className="text-sm text-[#7364DB] mt-0.5 ml-2 block italic"
           >
             create wallet
           </button>
@@ -417,8 +417,8 @@ const FormSection: React.FC<FormSectionProps> = ({
               value={tokenIdInput}
               onChange={handleTokenIdsChange}
               placeholder="1-5, 7, bot10, 15-20"
-              className={`w-full p-3 border rounded-lg bg-Neutral/Neutral-300-[night] focus:border-none active:border-none focus-visible:border-none ${
-                tokenIdError ? "border-red-500" : "border-Neutral-BG-[night]"
+              className={`w-full p-3 border rounded-lg bg-[#2C2C35] focus:border-none active:border-none focus-visible:border-none ${
+                tokenIdError ? "border-red-500" : "border-[#1F2128]"
               }`}
               autoComplete="off"
               disabled={isFetchingTokens}
@@ -519,7 +519,7 @@ const FormSection: React.FC<FormSectionProps> = ({
               placeholder={
                 formState.bidPrice.minType === "percentage" ? "10" : "0.1"
               }
-              className={`w-full p-3 rounded-l-lg border border-r-0 border-Neutral-BG-[night] bg-Neutral/Neutral-300-[night]`}
+              className={`w-full p-3 rounded-l-lg border border-r-0 border-[#1F2128] bg-[#2C2C35]`}
               required
               autoComplete="off"
             />
@@ -532,7 +532,7 @@ const FormSection: React.FC<FormSectionProps> = ({
           </div>
 
           {formState.bidPrice.minType === "percentage" && minFloorPrice && (
-            <span className="text-xs text-n-3">
+            <span className="text-xs text-[#9691A4]">
               {((minFloorPrice * +formState.bidPrice.min) / 100).toFixed(4)} ETH
             </span>
           )}
@@ -566,7 +566,7 @@ const FormSection: React.FC<FormSectionProps> = ({
               placeholder={
                 formState.bidPrice.maxType === "percentage" ? "80" : "1"
               }
-              className={`w-full p-3 rounded-l-lg border border-r-0 border-Neutral-BG-[night] bg-Neutral/Neutral-300-[night]`}
+              className={`w-full p-3 rounded-l-lg border border-r-0 border-[#1F2128] bg-[#2C2C35]`}
               autoComplete="off"
             />
             <CustomSelect
@@ -577,7 +577,7 @@ const FormSection: React.FC<FormSectionProps> = ({
             />
           </div>
           {formState.bidPrice.maxType === "percentage" && minFloorPrice && (
-            <span className="text-xs text-n-3">
+            <span className="text-xs text-[#9691A4]">
               {((minFloorPrice * +formState.bidPrice.max) / 100).toFixed(4)} ETH
             </span>
           )}
@@ -619,7 +619,7 @@ const FormSection: React.FC<FormSectionProps> = ({
               placeholder={
                 formState.openseaBidPrice.minType === "percentage" ? "80" : "1"
               }
-              className={`w-full p-3 rounded-l-lg border border-r-0 border-Neutral-BG-[night] bg-Neutral/Neutral-300-[night]`}
+              className={`w-full p-3 rounded-l-lg border border-r-0 border-[#1F2128] bg-[#2C2C35]`}
               autoComplete="off"
               required={
                 formState.selectedMarketplaces
@@ -639,7 +639,7 @@ const FormSection: React.FC<FormSectionProps> = ({
           </div>
           {formState.openseaBidPrice.minType === "percentage" &&
             formState.openseaFloorPrice && (
-              <span className="text-xs text-n-3">
+              <span className="text-xs text-[#9691A4]">
                 {(
                   (formState.openseaFloorPrice *
                     +formState.openseaBidPrice.min) /
@@ -688,7 +688,7 @@ const FormSection: React.FC<FormSectionProps> = ({
               placeholder={
                 formState.openseaBidPrice.maxType === "percentage" ? "80" : "1"
               }
-              className={`w-full p-3 rounded-l-lg border border-r-0 border-Neutral-BG-[night] bg-Neutral/Neutral-300-[night]`}
+              className={`w-full p-3 rounded-l-lg border border-r-0 border-[#1F2128] bg-[#2C2C35]`}
               autoComplete="off"
               required={
                 formState.selectedMarketplaces
@@ -709,7 +709,7 @@ const FormSection: React.FC<FormSectionProps> = ({
           </div>
           {formState.openseaBidPrice.maxType === "percentage" &&
             formState.openseaFloorPrice && (
-              <span className="text-xs text-n-3">
+              <span className="text-xs text-[#9691A4]">
                 {(
                   (formState.openseaFloorPrice *
                     +formState.openseaBidPrice.max) /
@@ -754,7 +754,7 @@ const FormSection: React.FC<FormSectionProps> = ({
               placeholder={
                 formState.blurBidPrice.minType === "percentage" ? "80" : "1"
               }
-              className={`w-full p-3 rounded-l-lg border border-r-0 border-Neutral-BG-[night] bg-Neutral/Neutral-300-[night]`}
+              className={`w-full p-3 rounded-l-lg border border-r-0 border-[#1F2128] bg-[#2C2C35]`}
               autoComplete="off"
               required={
                 formState.selectedMarketplaces
@@ -773,7 +773,7 @@ const FormSection: React.FC<FormSectionProps> = ({
 
           {formState.blurBidPrice.minType === "percentage" &&
             formState.blurFloorPrice && (
-              <span className="text-xs text-n-3">
+              <span className="text-xs text-[#9691A4]">
                 {(
                   (Number(formState.blurFloorPrice) *
                     +formState.blurBidPrice.min) /
@@ -817,7 +817,7 @@ const FormSection: React.FC<FormSectionProps> = ({
               placeholder={
                 formState.blurBidPrice.maxType === "percentage" ? "80" : "1"
               }
-              className={`w-full p-3 rounded-l-lg border border-r-0 border-Neutral-BG-[night] bg-Neutral/Neutral-300-[night]`}
+              className={`w-full p-3 rounded-l-lg border border-r-0 border-[#1F2128] bg-[#2C2C35]`}
               autoComplete="off"
               required={
                 formState.selectedMarketplaces
@@ -836,7 +836,7 @@ const FormSection: React.FC<FormSectionProps> = ({
           </div>
           {formState.blurBidPrice.maxType === "percentage" &&
             formState.blurFloorPrice && (
-              <span className="text-xs text-n-3">
+              <span className="text-xs text-[#9691A4]">
                 {(
                   (formState.blurFloorPrice * +formState.blurBidPrice.max) /
                   100
@@ -889,7 +889,7 @@ const FormSection: React.FC<FormSectionProps> = ({
                   ? "80"
                   : "1"
               }
-              className={`w-full p-3 rounded-l-lg border border-r-0 border-Neutral-BG-[night] bg-Neutral/Neutral-300-[night]`}
+              className={`w-full p-3 rounded-l-lg border border-r-0 border-[#1F2128] bg-[#2C2C35]`}
               autoComplete="off"
               required={
                 formState.selectedMarketplaces
@@ -909,7 +909,7 @@ const FormSection: React.FC<FormSectionProps> = ({
           </div>
           {formState.magicEdenBidPrice.minType === "percentage" &&
             formState.magicedenFloorPrice && (
-              <span className="text-xs text-n-3">
+              <span className="text-xs text-[#9691A4]">
                 {(
                   (formState.magicedenFloorPrice *
                     +formState.magicEdenBidPrice.min) /
@@ -962,7 +962,7 @@ const FormSection: React.FC<FormSectionProps> = ({
                   ? "80"
                   : "1"
               }
-              className={`w-full p-3 rounded-l-lg border border-r-0 border-Neutral-BG-[night] bg-Neutral/Neutral-300-[night]`}
+              className={`w-full p-3 rounded-l-lg border border-r-0 border-[#1F2128] bg-[#2C2C35]`}
               autoComplete="off"
               required={
                 formState.selectedMarketplaces
@@ -983,7 +983,7 @@ const FormSection: React.FC<FormSectionProps> = ({
           </div>
           {formState.magicEdenBidPrice.maxType === "percentage" &&
             formState.magicedenFloorPrice && (
-              <span className="text-xs text-n-3">
+              <span className="text-xs text-[#9691A4]">
                 {(
                   (formState.magicedenFloorPrice *
                     +formState.magicEdenBidPrice.max) /
@@ -1016,7 +1016,7 @@ const FormSection: React.FC<FormSectionProps> = ({
             onChange={handleBidDurationChange}
             value={formState.bidDuration.value || 15}
             placeholder="Duration"
-            className="w-full p-3 rounded-l-lg border border-r-0 border-Neutral-BG-[night] bg-Neutral/Neutral-300-[night]"
+            className="w-full p-3 rounded-l-lg border border-r-0 border-[#1F2128] bg-[#2C2C35]"
             autoComplete="off"
           />
           <CustomSelect
@@ -1051,7 +1051,7 @@ const FormSection: React.FC<FormSectionProps> = ({
             onChange={handleLoopIntervalChange}
             value={formState.loopInterval.value}
             placeholder="15 Minutes"
-            className="w-full p-3 rounded-l-lg border border-r-0 border-Neutral-BG-[night] bg-Neutral/Neutral-300-[night]"
+            className="w-full p-3 rounded-l-lg border border-r-0 border-[#1F2128] bg-[#2C2C35]"
             autoComplete="off"
           />
           <CustomSelect

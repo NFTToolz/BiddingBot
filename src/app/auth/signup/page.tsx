@@ -44,7 +44,7 @@ const SignUp = () => {
       </div>
       <button
         onClick={handleCreateUser}
-        className={`w-full bg-Brand/Brand-1 text-white p-4 rounded-md hover:bg-[#5C4DB5] mt-5 font-sans uppercase`}
+        className={`w-full bg-[#7364DB] text-white p-4 rounded-md hover:bg-[#5C4DB5] mt-5 font-sans uppercase`}
       >
         Create account
       </button>

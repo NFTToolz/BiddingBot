@@ -17,14 +17,16 @@ const TagSection = ({
 }: ITagSection) => {
   return (
     <div className="mt-6">
-      <h3 className="mb-2">Select Tags</h3>
+      <label htmlFor="tags" className="block text-sm font-medium mb-2">
+        Select Tags
+      </label>
       <TagSelect
         selectedTags={formState.tags}
         onChange={(tags) => handleTagChange(tags)}
       />
       <button
         type="button"
-        className="text-sm text-Brand/Brand-1 mt-0.5 ml-2 block italic cursor-pointer"
+        className="text-sm text-[#7364DB] mt-0.5 ml-2 block italic cursor-pointer"
         onClick={() => setShowCreateTag(!showCreateTag)}
       >
         {showCreateTag ? "" : "create tag"}
@@ -40,7 +42,7 @@ const TagSection = ({
               placeholder="Tag Name"
               value={newTagName}
               onChange={(e) => setNewTagName(e.target.value)}
-              className="p-2  border-Neutral-BG-[night] bg-Neutral/Neutral-300-[night] rounded placeholder:text-sm flex-1"
+              className="p-2  border-[#1F2128] bg-[#2C2C35] rounded placeholder:text-sm flex-1"
             />
             <CustomColorPicker value={newTagColor} onChange={setNewTagColor} />
 
@@ -51,7 +53,7 @@ const TagSection = ({
 
           <button
             type="button"
-            className="text-sm text-Brand/Brand-1 mt-0.5 ml-2 block italic cursor-pointer"
+            className="text-sm text-[#7364DB] mt-0.5 ml-2 block italic cursor-pointer"
             onClick={() => setShowCreateTag(!showCreateTag)}
           >
             {showCreateTag ? "hide" : ""}

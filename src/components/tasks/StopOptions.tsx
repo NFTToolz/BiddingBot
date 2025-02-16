@@ -110,7 +110,7 @@ const StopOption = ({ formState, setFormState }: IStopOption) => {
                     }
                     value={formState.stopOptions.minFloorPrice?.toString()}
                     placeholder="0.0001"
-                    className="w-full p-3 rounded-lg border border-Neutral-BG-[night] bg-Neutral/Neutral-300-[night]"
+                    className="w-full p-3 rounded-lg border border-[#1F2128] bg-[#2C2C35]"
                     required={formState.stopOptions.triggerStopOptions}
                     autoComplete="off"
                   />
@@ -129,7 +129,7 @@ const StopOption = ({ formState, setFormState }: IStopOption) => {
                           },
                         }));
                       }}
-                      className="flex-1 px-3 py-1.5 text-sm font-medium rounded-lg bg-Brand/Brand-1 transition-colors"
+                      className="flex-1 px-3 py-1.5 text-sm font-medium rounded-lg bg-[#7364DB] transition-colors"
                     >
                       -25%
                     </button>
@@ -147,7 +147,7 @@ const StopOption = ({ formState, setFormState }: IStopOption) => {
                           },
                         }));
                       }}
-                      className="flex-1 px-3 py-1.5 text-sm font-medium rounded-lg bg-Brand/Brand-1 transition-colors"
+                      className="flex-1 px-3 py-1.5 text-sm font-medium rounded-lg bg-[#7364DB] transition-colors"
                     >
                       -10%
                     </button>
@@ -177,7 +177,7 @@ const StopOption = ({ formState, setFormState }: IStopOption) => {
                     }
                     value={formState.stopOptions.maxFloorPrice?.toString()}
                     placeholder="0.0001"
-                    className="w-full p-3 rounded-lg border border-Neutral-BG-[night] bg-Neutral/Neutral-300-[night]"
+                    className="w-full p-3 rounded-lg border border-[#1F2128] bg-[#2C2C35]"
                     required={formState.stopOptions.triggerStopOptions}
                     autoComplete="off"
                   />
@@ -193,7 +193,7 @@ const StopOption = ({ formState, setFormState }: IStopOption) => {
                           },
                         }));
                       }}
-                      className="flex-1 px-3 py-1.5 text-sm font-medium rounded-lg bg-Brand/Brand-1 transition-colors"
+                      className="flex-1 px-3 py-1.5 text-sm font-medium rounded-lg bg-[#7364DB] transition-colors"
                     >
                       +10%
                     </button>
@@ -208,7 +208,7 @@ const StopOption = ({ formState, setFormState }: IStopOption) => {
                           },
                         }));
                       }}
-                      className="flex-1 px-3 py-1.5 text-sm font-medium rounded-lg bg-Brand/Brand-1 transition-colors"
+                      className="flex-1 px-3 py-1.5 text-sm font-medium rounded-lg bg-[#7364DB] transition-colors"
                     >
                       +25%
                     </button>
@@ -244,7 +244,7 @@ const StopOption = ({ formState, setFormState }: IStopOption) => {
 											}
 											value={formState.stopOptions.minTraitPrice?.toString()}
 											placeholder='0.0001'
-											className={`w-full p-3 rounded-lg border border-Neutral-BG-[night] bg-Neutral/Neutral-300-[night] `}
+											className={`w-full p-3 rounded-lg border border-[#1F2128] bg-[#2C2C35] `}
 											required
 											autoComplete='off'
 										/>
@@ -273,7 +273,7 @@ const StopOption = ({ formState, setFormState }: IStopOption) => {
 											}
 											value={formState.stopOptions.maxTraitPrice?.toString()}
 											placeholder='0.0001'
-											className={`w-full p-3 rounded-lg border border-Neutral-BG-[night] bg-Neutral/Neutral-300-[night] `}
+											className={`w-full p-3 rounded-lg border border-[#1F2128] bg-[#2C2C35] `}
 											required
 											autoComplete='off'
 										/>
@@ -306,7 +306,7 @@ const StopOption = ({ formState, setFormState }: IStopOption) => {
                 }
                 value={formState.stopOptions.maxPurchase?.toString()}
                 placeholder="1"
-                className={`w-full p-3 rounded-lg border border-Neutral-BG-[night] bg-Neutral/Neutral-300-[night] `}
+                className={`w-full p-3 rounded-lg border border-[#1F2128] bg-[#2C2C35] `}
                 autoComplete="off"
               />
               <span>Held: {balance}</span>

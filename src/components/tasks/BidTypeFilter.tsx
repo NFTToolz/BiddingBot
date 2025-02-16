@@ -45,10 +45,10 @@ const BidTypeFilter: React.FC<BidTypeFilterProps> = ({
     <div className="relative inline-block" ref={dropdownRef}>
       <button
         type="button"
-        className="border rounded-lg shadow-sm p-3 border-n-5 bg-Neutral/Neutral-300-[night] text-left flex items-center hover:bg-Neutral/Neutral-400-[night] transition-colors min-h-[50px] whitespace-nowrap w-full min-w-[195px]"
+        className="border rounded-lg shadow-sm p-3 border-[#3F3A52] bg-[#2C2C35] text-left flex items-center hover:bg-Neutral/Neutral-400-[night] transition-colors min-h-[50px] whitespace-nowrap w-full min-w-[195px]"
         onClick={() => setIsOpen(!isOpen)}
       >
-        <div className="text-n-3 mr-2 flex-grow">
+        <div className="text-[#9691A4] mr-2 flex-grow">
           {selectedBidTypes.length > 0
             ? selectedBidTypes.join(", ")
             : "Filter by bid type"}
@@ -56,13 +56,13 @@ const BidTypeFilter: React.FC<BidTypeFilterProps> = ({
         <ChevronDown className="flex-shrink-0" />
       </button>
       {isOpen && (
-        <div className="absolute z-10 mt-1 border rounded-lg shadow-lg border-Neutral-BG-[night] bg-Neutral/Neutral-300-[night] max-h-60 overflow-y-auto custom-scrollbar whitespace-nowrap w-full min-w-[195px]">
+        <div className="absolute z-10 mt-1 border rounded-lg shadow-lg border-[#1F2128] bg-[#2C2C35] max-h-60 overflow-y-auto custom-scrollbar whitespace-nowrap w-full min-w-[195px]">
           {bidTypes.map((bidType) => (
             <div
               key={bidType}
               onClick={() => toggleBidType(bidType)}
               className={`cursor-pointer p-3 transition-colors hover:bg-Neutral/Neutral-400-[night] ${
-                selectedBidTypes.includes(bidType) ? "bg-Brand/Brand-1" : ""
+                selectedBidTypes.includes(bidType) ? "bg-[#7364DB]" : ""
               }`}
             >
               {bidType}

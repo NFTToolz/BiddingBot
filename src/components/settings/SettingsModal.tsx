@@ -99,14 +99,14 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
       <div onClick={handleContentClick}>
-        <h2 className="text-center text-xl font-bold my-4 text-Brand/Brand-1">
+        <h2 className="text-center text-xl font-bold my-4 text-[#7364DB]">
           SERVER SETTINGS
         </h2>
 
         <div className="my-4 w-full">
           <label
             htmlFor="apiKey"
-            className="block text-sm text-Neutral/Neutral-1100-[night] font-sans"
+            className="block text-sm text-[#F1F1F1] font-sans"
           >
             API Key
           </label>
@@ -116,7 +116,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
               value={apiKey}
               onChange={(e) => setApiKey(e.target.value)}
               placeholder="Enter your API key"
-              className="mt-2 block w-full border rounded-lg shadow-sm p-4 pr-10 border-Neutral-BG-[night] bg-Neutral/Neutral-300-[night]"
+              className="mt-2 block w-full border rounded-lg shadow-sm p-4 pr-10 border-[#1F2128] bg-[#2C2C35]"
               required
               autoComplete="off"
             />
@@ -133,7 +133,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
         <div className="my-4 w-full">
           <label
             htmlFor="rateLimit"
-            className="block text-sm text-Neutral/Neutral-1100-[night] font-sans"
+            className="block text-sm text-[#F1F1F1] font-sans"
           >
             Rate Limit
           </label>
@@ -142,7 +142,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
             value={rateLimit}
             onChange={(e) => setRateLimit(e.target.value)}
             placeholder="Enter rate limit"
-            className="mt-2 block w-full border rounded-lg shadow-sm p-4 border-Neutral-BG-[night] bg-Neutral/Neutral-300-[night]"
+            className="mt-2 block w-full border rounded-lg shadow-sm p-4 border-[#1F2128] bg-[#2C2C35]"
             required
             min="1"
             step="1"
@@ -162,7 +162,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
 
         <div className="flex justify-end mt-8">
           <button
-            className="px-12 rounded py-3 bg-Brand/Brand-1 text-white text-sm font-bold"
+            className="px-12 rounded py-3 bg-[#7364DB] text-white text-sm font-bold"
             onClick={handleSubmit}
           >
             SAVE SETTINGS

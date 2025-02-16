@@ -111,10 +111,8 @@ const WalletHoldings = () => {
   return (
     <div className="mt-7 flex flex-col lg:flex-row gap-7">
       <div className="holdings w-full lg:w-1/2 xl:w-2/5">
-        <div className="border rounded-2xl py-5 px-2 sm:px-3 md:px-6 bg-[#1f2129] border-Neutral/Neutral-Border-[night] h-full">
-          <h2 className="text-Neutral/Neutral-500-[day] font-semibold mb-6">
-            Holdings
-          </h2>
+        <div className="border rounded-2xl py-5 px-2 sm:px-3 md:px-6 bg-[#1f2129] border-[#313442] h-full">
+          <h2 className="text-[#7E7E8F] font-semibold mb-6">Holdings</h2>
           <div className="space-y-4">
             {holdings.map((item, index) => (
               <div key={index} className="flex items-center justify-between">
@@ -150,9 +148,9 @@ const WalletHoldings = () => {
         </div>
       </div>
       <div className="holdings w-full lg:w-1/2 xl:w-3/5">
-        <div className="border rounded-2xl py-5 px-2 sm:px-3 md:px-6 bg-[#1f2129] border-Neutral/Neutral-Border-[night] h-full">
+        <div className="border rounded-2xl py-5 px-2 sm:px-3 md:px-6 bg-[#1f2129] border-[#313442] h-full">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
-            <h2 className="text-Neutral/Neutral-500-[day] font-semibold mb-2 sm:mb-0">
+            <h2 className="text-[#7E7E8F] font-semibold mb-2 sm:mb-0">
               Portfolio Performance
             </h2>
             <div className="flex flex-wrap gap-2">
@@ -162,7 +160,7 @@ const WalletHoldings = () => {
                   onClick={() => setTimeRange(range)}
                   className={`px-3 py-1 rounded text-sm ${
                     timeRange === range
-                      ? "bg-Brand/Brand-1 text-white"
+                      ? "bg-[#7364DB] text-white"
                       : "bg-gray-700 text-gray-300"
                   }`}
                 >

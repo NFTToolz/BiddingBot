@@ -68,7 +68,7 @@ const Header = () => {
 
   return (
     <div
-      className={`fixed top-0 left-0 w-full z-50 border-b border-n-6 lg:bg-n-8/90 lg:backdrop-blur-sm ${
+      className={`fixed top-0 left-0 w-full z-50 border-b border-[#3F3A52] lg:bg-n-8/90 lg:backdrop-blur-sm ${
         openNavigation ? "bg-n-8" : "bg-n-8/90 backdrop-blur-sm"
       }`}
     >
@@ -88,11 +88,13 @@ const Header = () => {
                 key={index}
                 href={`/${item.url}`}
                 onClick={handleClick}
-                className={`block relative font-code text-2xl uppercase text-n-1 transition-colors hover:text-color-1 ${
+                className={`block relative font-code text-2xl uppercase text-[#FFFFFF] transition-colors hover:text-color-1 ${
                   item.onlyMobile ? "lg:hidden" : ""
                 } px-6 py-6 md:py-8 lg:-mr-0.25 lg:text-base lg:font-semibold ${
-                  item.url === hash ? "z-2 lg:text-n-1" : "lg:text-n-1/50"
-                } lg:leading-5 lg:hover:text-n-1 xl:px-12`}
+                  item.url === hash
+                    ? "z-2 lg:text-[#FFFFFF]"
+                    : "lg:text-[#FFFFFF]/50"
+                } lg:leading-5 lg:hover:text-[#FFFFFF] xl:px-12`}
               >
                 {item.title}
               </Link>
@@ -102,7 +104,7 @@ const Header = () => {
           <HamburgerMenu />
         </nav>
         <button
-          className="border border-Brand/Brand-1 w-auto uppercase font-code font-semibold px-8 py-2 rounded bg-Brand/Brand-1"
+          className="border border-[#7364DB] w-auto uppercase font-code font-semibold px-8 py-2 rounded bg-[#7364DB]"
           onClick={handleSignIn}
         >
           Sign in

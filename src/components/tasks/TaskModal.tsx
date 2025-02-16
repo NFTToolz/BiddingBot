@@ -755,7 +755,7 @@ const TaskModal: React.FC<TaskModalProps> = ({
       key={taskId || "new"}
     >
       <form onSubmit={onSubmit} className="flex flex-col h-full">
-        <h2 className="text-center text-xl font-bold mb-6 text-Brand/Brand-1">
+        <h2 className="text-center text-xl font-bold mb-6 text-[#7364DB]">
           {duplicateTask && !taskId
             ? "DUPLICATE TASK"
             : taskId
@@ -777,7 +777,7 @@ const TaskModal: React.FC<TaskModalProps> = ({
                   onChange={handleSlugChange}
                   value={formState.contract.slug}
                   placeholder="collection slug"
-                  className={`w-full p-3 rounded-lg border border-Neutral-BG-[night] bg-Neutral/Neutral-300-[night] ${
+                  className={`w-full p-3 rounded-lg border border-[#1F2128] bg-[#2C2C35] ${
                     errors.contract?.slug ? "border-red-500" : ""
                   }`}
                   required
@@ -842,7 +842,7 @@ const TaskModal: React.FC<TaskModalProps> = ({
           <button
             type="submit"
             disabled={!isFormValid()}
-            className={`w-full sm:w-auto bg-Brand/Brand-1 text-white py-3 px-6 rounded-lg transition-colors mb-8
+            className={`w-full sm:w-auto bg-[#7364DB] text-white py-3 px-6 rounded-lg transition-colors mb-8
             ${
               !isFormValid()
                 ? "opacity-50 cursor-not-allowed"

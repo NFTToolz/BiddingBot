@@ -45,10 +45,10 @@ const RecentBids: React.FC<RecentBidsProps> = ({
 
   return (
     <Accordion title={`Recent Bids (${bids.length})`}>
-      <div className="border rounded-2xl py-3 sm:py-5 px-2 sm:px-6 bg-[#1f2129] border-Neutral/Neutral-Border-[night] h-full overflow-x-auto">
+      <div className="border rounded-2xl py-3 sm:py-5 px-2 sm:px-6 bg-[#1f2129] border-[#313442] h-full overflow-x-auto">
         <table className="w-full text-sm text-left">
           <thead>
-            <tr className="border-b border-Neutral/Neutral-Border-[night]">
+            <tr className="border-b border-[#313442]">
               <th scope="col" className="px-6 py-3 text-center">
                 Collection
               </th>
@@ -74,16 +74,13 @@ const RecentBids: React.FC<RecentBidsProps> = ({
           </thead>
           <tbody>
             {bids.map((bid, index) => (
-              <tr
-                key={index}
-                className="border-b border-Neutral/Neutral-Border-[night]"
-              >
+              <tr key={index} className="border-b border-[#313442]">
                 <td className="px-6 py-4 text-center">
                   <a
                     href={getOpenSeaCollectionUrl(bid.collectionSlug)}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-Brand/Brand-1 underline"
+                    className="text-[#7364DB] underline"
                   >
                     {bid.collectionSlug}
                   </a>
@@ -97,7 +94,7 @@ const RecentBids: React.FC<RecentBidsProps> = ({
                     href={getOpenSeaProfileUrl(bid.makerAddress)}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-Brand/Brand-1 underline"
+                    className="text-[#7364DB] underline"
                   >
                     {`${bid.makerAddress.slice(
                       0,

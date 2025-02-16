@@ -5,7 +5,7 @@ const MODAL_ROOT_ID = "modal-root";
 const OVERLAY_CLASS =
   "fixed inset-0 flex items-center justify-center bg-opacity-75 z-[9999] bg-n-8";
 const MODAL_CLASS =
-  "relative shadow-lg w-[95%] max-w-[520px] max-h-[90vh] bg-[#1F2128] p-6 md:p-10 rounded-2xl overflow-y-auto";
+  "relative shadow-lg w-[95%] max-w-[520px] max-h-[90vh] bg-[#1F2128] p-6 rounded-2xl overflow-y-auto";
 
 interface ModalProps {
   isOpen: boolean;
@@ -62,7 +62,7 @@ const Modal: FC<ModalProps> = ({
       >
         <button
           onClick={onClose}
-          className="absolute top-6 right-6 text-Neutral/Neutral-1100-[night]"
+          className="absolute top-6 right-6 text-[#F1F1F1]"
           aria-label="Close modal"
         >
           <svg

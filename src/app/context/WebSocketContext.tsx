@@ -158,6 +158,8 @@ export interface BidStats {
   floorPrices: BidCounts;
   bestOffers: BidCounts;
   warningBids: WarningBids;
+  warningMessage: WarningMessages;
+  rps: IRPS;
 }
 
 export interface BidRates {
@@ -184,4 +186,17 @@ export interface WarningBids {
     magiceden: boolean;
     blur: boolean;
   };
+}
+
+export interface WarningMessages {
+  [key: string]: {
+    opensea: string;
+    magiceden: string;
+    blur: string;
+  };
+}
+
+interface IRPS {
+  currentRPS: number;
+  maxRPS: number;
 }

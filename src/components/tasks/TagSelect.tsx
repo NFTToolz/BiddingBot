@@ -50,7 +50,7 @@ const TagSelect: React.FC<TagSelectProps> = ({ selectedTags, onChange }) => {
     <div className="relative" ref={dropdownRef}>
       <button
         type="button"
-        className="w-full border rounded-lg shadow-sm p-3 border-Neutral-BG-[night] bg-Neutral/Neutral-300-[night] text-left flex justify-between items-center hover:bg-Neutral/Neutral-400-[night] transition-colors"
+        className="w-full border rounded-lg shadow-sm p-3 border-[#1F2128] bg-[#2C2C35] text-left flex justify-between items-center hover:bg-Neutral/Neutral-400-[night] transition-colors"
         onClick={() => setIsOpen(!isOpen)}
       >
         <div className="flex gap-1">
@@ -67,14 +67,14 @@ const TagSelect: React.FC<TagSelectProps> = ({ selectedTags, onChange }) => {
         <ChevronDown />
       </button>
       {isOpen && (
-        <div className="absolute z-10 w-full mt-1 border rounded-lg shadow-lg border-Neutral-BG-[night] bg-Neutral/Neutral-300-[night] max-h-60 overflow-y-auto custom-scrollbar p-0.5">
-          <div className="sticky top-0 z-20 bg-Neutral/Neutral-300-[night]">
+        <div className="absolute z-10 w-full mt-1 border rounded-lg shadow-lg border-[#1F2128] bg-[#2C2C35] max-h-60 overflow-y-auto custom-scrollbar p-0.5">
+          <div className="sticky top-0 z-20 bg-[#2C2C35]">
             <input
               type="text"
               placeholder="Search tags..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="rounded w-full p-3 bg-n-7"
+              className="rounded w-full p-3 bg-[#15131D]"
             />
           </div>
 
@@ -85,7 +85,7 @@ const TagSelect: React.FC<TagSelectProps> = ({ selectedTags, onChange }) => {
                 onClick={() => toggleTag(tag)}
                 className={`cursor-pointer p-3 transition-colors my-2 ${
                   selectedTags.some((selected) => selected.name === tag.name)
-                    ? "bg-Brand/Brand-1"
+                    ? "bg-[#7364DB]"
                     : ""
                 }`}
               >

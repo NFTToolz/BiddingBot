@@ -42,14 +42,14 @@ const DeleteModal: React.FC<DeleteModalProps> = ({
           {taskSlugs &&
             (Array.isArray(taskSlugs) ? taskSlugs : [taskSlugs]).map((slug) => (
               <div key={slug} className="py-1 px-2 rounded mb-1">
-                <span className="text-Brand/Brand-1">{slug}</span>
+                <span className="text-[#7364DB]">{slug}</span>
               </div>
             ))}
         </div>
         <div className="flex justify-center gap-4">
           <button
             onClick={onClose}
-            className="px-4 py-2 rounded-lg border border-Neutral/Neutral-Border-[night] hover:bg-Neutral/Neutral-300-[night] transition-colors"
+            className="px-4 py-2 rounded-lg border border-[#313442] hover:bg-[#2C2C35] transition-colors"
           >
             Cancel
           </button>

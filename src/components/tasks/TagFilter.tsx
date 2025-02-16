@@ -51,10 +51,10 @@ const TagFilter: React.FC<TagFilterProps> = ({ selectedTags, onChange }) => {
     <div className="relative w-full min-w-44" ref={dropdownRef}>
       <button
         type="button"
-        className="w-full border rounded-lg shadow-sm p-3 border-n-5 bg-Neutral/Neutral-300-[night] text-left flex justify-between items-center hover:bg-Neutral/Neutral-400-[night] transition-colors min-h-[50px]"
+        className="w-full border rounded-lg shadow-sm p-3 border-[#3F3A52] bg-[#2C2C35] text-left flex justify-between items-center hover:bg-Neutral/Neutral-400-[night] transition-colors min-h-[50px]"
         onClick={() => setIsOpen(!isOpen)}
       >
-        <div className="flex gap-1 w-full text-n-3">
+        <div className="flex gap-1 w-full text-[#9691A4]">
           {selectedTags.length > 0
             ? selectedTags.map((tag, index) => (
                 <div
@@ -68,14 +68,14 @@ const TagFilter: React.FC<TagFilterProps> = ({ selectedTags, onChange }) => {
         <ChevronDown />
       </button>
       {isOpen && (
-        <div className="absolute z-10 w-full mt-1 border rounded-lg shadow-lg border-Neutral-BG-[night] bg-Neutral/Neutral-300-[night] max-h-60 overflow-y-auto custom-scrollbar p-0.5">
-          <div className="sticky top-0 z-20 bg-Neutral/Neutral-300-[night] p-2">
+        <div className="absolute z-10 w-full mt-1 border rounded-lg shadow-lg border-[#1F2128] bg-[#2C2C35] max-h-60 overflow-y-auto custom-scrollbar p-0.5">
+          <div className="sticky top-0 z-20 bg-[#2C2C35] p-2">
             <input
               type="text"
               placeholder="Search tags..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full p-3 rounded bg-n-7 text-n-3"
+              className="w-full p-3 rounded bg-[#15131D] text-[#9691A4]"
             />
           </div>
           <div className="max-h-48 overflow-y-auto">
@@ -85,7 +85,7 @@ const TagFilter: React.FC<TagFilterProps> = ({ selectedTags, onChange }) => {
                 onClick={() => toggleTag(tag)}
                 className={`cursor-pointer p-3 transition-colors my-2 w-full ${
                   selectedTags.some((selected) => selected.name === tag.name)
-                    ? "bg-Brand/Brand-1"
+                    ? "bg-[#7364DB]"
                     : ""
                 }`}
               >

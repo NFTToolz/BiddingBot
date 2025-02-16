@@ -163,7 +163,7 @@ export default function Page({ params }: { params: { slug: string } }) {
           onClick={() => paginate(i)}
           className={`px-3 py-1 rounded ${
             currentPage === i
-              ? "bg-Brand/Brand-1 text-white"
+              ? "bg-[#7364DB] text-white"
               : "bg-gray-700 text-white"
           }`}
         >
@@ -247,7 +247,7 @@ export default function Page({ params }: { params: { slug: string } }) {
       <div className="my-4">
         <Link
           href="/dashboard"
-          className="text-Brand/Brand-1 underline font-semibold"
+          className="text-[#7364DB] underline font-semibold"
         >
           Back to Tasks
         </Link>
@@ -338,7 +338,7 @@ export default function Page({ params }: { params: { slug: string } }) {
               />
               <div
                 className={`relative w-11 h-6 bg-gray-200 rounded-full transition-colors duration-200 ease-in-out ${
-                  task?.running ? "bg-red-500" : "!bg-Brand/Brand-1"
+                  task?.running ? "bg-red-500" : "!bg-[#7364DB]"
                 }`}
               >
                 <div
@@ -356,7 +356,7 @@ export default function Page({ params }: { params: { slug: string } }) {
           onClick={() => setActiveTab("success")}
           className={`px-4 py-2 rounded-t-lg ${
             activeTab === "success"
-              ? "bg-[#1f2129] text-Brand/Brand-1 border-b-2 border-Brand/Brand-1"
+              ? "bg-[#1f2129] text-[#7364DB] border-b-2 border-[#7364DB]"
               : "bg-transparent text-gray-400 hover:text-gray-300"
           }`}
         >
@@ -395,10 +395,10 @@ export default function Page({ params }: { params: { slug: string } }) {
       </div>
 
       {activeTab === "success" && (
-        <div className="border rounded-2xl py-3 sm:py-5 px-2 sm:px-6 bg-[#1f2129] border-Neutral/Neutral-Border-[night] h-full overflow-x-auto">
+        <div className="border rounded-2xl py-3 sm:py-5 px-2 sm:px-6 bg-[#1f2129] border-[#313442] h-full overflow-x-auto">
           <table className="w-full text-sm text-left">
             <thead className="hidden sm:table-header-group">
-              <tr className="border-b border-Neutral/Neutral-Border-[night]">
+              <tr className="border-b border-[#313442]">
                 <th scope="col" className="px-6 py-3 text-left">
                   <label className="inline-flex items-center cursor-pointer">
                     <input
@@ -455,7 +455,7 @@ export default function Page({ params }: { params: { slug: string } }) {
                   return (
                     <tr
                       key={index}
-                      className="border-b border-Neutral/Neutral-Border-[night] flex flex-col sm:table-row mb-4 sm:mb-0"
+                      className="border-b border-[#313442] flex flex-col sm:table-row mb-4 sm:mb-0"
                     >
                       <td className="py-2 px-2 sm:px-4 text-left flex items-center justify-between sm:table-cell">
                         <span className="sm:hidden font-bold">Select</span>
@@ -520,8 +520,8 @@ export default function Page({ params }: { params: { slug: string } }) {
                           {(() => {
                             if (bid?.identifier?.split(":").length == 2) {
                               return (
-                                <div className="flex border border-n-4 gap-2">
-                                  <span className="border-n-4 border-r px-2 bg-n-5">
+                                <div className="flex border border-[#757185] gap-2">
+                                  <span className="border-[#757185] border-r px-2 bg-[#3F3A52]">
                                     {bid?.identifier?.split(":")[0]}
                                   </span>
                                   <span className="px-2">
@@ -531,7 +531,7 @@ export default function Page({ params }: { params: { slug: string } }) {
                               );
                             } else {
                               return (
-                                <span className="px-2 bg-n-5">
+                                <span className="px-2 bg-[#3F3A52]">
                                   {bid?.identifier}
                                 </span>
                               );
@@ -563,11 +563,11 @@ export default function Page({ params }: { params: { slug: string } }) {
       )}
 
       {activeTab !== "success" && (
-        <div className="border rounded-2xl py-3 sm:py-5 px-2 sm:px-6 bg-[#1f2129] border-Neutral/Neutral-Border-[night] h-full overflow-x-auto">
+        <div className="border rounded-2xl py-3 sm:py-5 px-2 sm:px-6 bg-[#1f2129] border-[#313442] h-full overflow-x-auto">
           {currentLogs && currentLogs.length > 0 ? (
             <table className="w-full text-sm text-left">
               <thead className="hidden sm:table-header-group">
-                <tr className="border-b border-Neutral/Neutral-Border-[night]">
+                <tr className="border-b border-[#313442]">
                   <th scope="col" className="px-6 py-3 text-left">
                     Marketplace
                   </th>
@@ -586,7 +586,7 @@ export default function Page({ params }: { params: { slug: string } }) {
                 {currentLogs.map((log, index) => (
                   <tr
                     key={index}
-                    className="border-b border-Neutral/Neutral-Border-[night] flex flex-col sm:table-row mb-4 sm:mb-0"
+                    className="border-b border-[#313442] flex flex-col sm:table-row mb-4 sm:mb-0"
                   >
                     <td className="py-2 px-2 sm:px-4 text-left flex items-center justify-start sm:table-cell">
                       <div className="flex gap-2 items-center justify-center">

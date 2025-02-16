@@ -102,7 +102,7 @@ const Wallet = () => {
           Manage Wallet
         </h1>
         <button
-          className="w-full sm:w-auto dashboard-btn uppercase bg-Brand/Brand-1 text-xs py-3 px-4 sm:text-sm sm:px-6 md:px-8"
+          className="w-full sm:w-auto dashboard-btn uppercase bg-[#7364DB] text-xs py-3 px-4 sm:text-sm sm:px-6 md:px-8"
           onClick={() => setIsModalOpen(true)}
         >
           Create New Wallet
@@ -113,30 +113,30 @@ const Wallet = () => {
         <div className="my-4">
           <Link
             href="/dashboard"
-            className="text-Brand/Brand-1 underline font-semibold"
+            className="text-[#7364DB] underline font-semibold"
           >
             Back to Tasks
           </Link>
         </div>
         <table className="min-w-full bg-n-8 rounded-lg">
           <thead>
-            <tr className="border-b border-n-6">
-              <th className="p-4 text-center text-sm font-medium text-n-4">
+            <tr className="border-b border-[#3F3A52]">
+              <th className="p-4 text-center text-sm font-medium text-[#757185]">
                 Name
               </th>
-              <th className="p-4 text-center text-sm font-medium text-n-4">
+              <th className="p-4 text-center text-sm font-medium text-[#757185]">
                 Address
               </th>
-              <th className="p-4 text-center text-sm font-medium text-n-4">
+              <th className="p-4 text-center text-sm font-medium text-[#757185]">
                 ETH Balance
               </th>
-              <th className="p-4 text-center text-sm font-medium text-n-4">
+              <th className="p-4 text-center text-sm font-medium text-[#757185]">
                 WETH Balance
               </th>
-              <th className="p-4 text-center text-sm font-medium text-n-4">
+              <th className="p-4 text-center text-sm font-medium text-[#757185]">
                 BETH Balance
               </th>
-              <th className="p-4 text-center text-sm font-medium text-n-4">
+              <th className="p-4 text-center text-sm font-medium text-[#757185]">
                 Actions
               </th>
             </tr>
@@ -144,7 +144,7 @@ const Wallet = () => {
           <tbody>
             {isLoading ? (
               <tr>
-                <td colSpan={6} className="text-center p-4 text-n-4">
+                <td colSpan={6} className="text-center p-4 text-[#757185]">
                   Loading wallet balances...
                 </td>
               </tr>
@@ -152,29 +152,29 @@ const Wallet = () => {
               wallets.map((wallet) => (
                 <tr
                   key={wallet.address}
-                  className="border-b border-n-6 hover:bg-n-7"
+                  className="border-b border-[#3F3A52] hover:bg-[#15131D]"
                 >
-                  <td className="p-4 text-sm text-n-1 text-center">
+                  <td className="p-4 text-sm text-[#FFFFFF] text-center">
                     {wallet.name}
                   </td>
-                  <td className="p-4 text-sm text-n-1 flex justify-center items-center gap-1">
+                  <td className="p-4 text-sm text-[#FFFFFF] flex justify-center items-center gap-1">
                     {`${wallet.address.slice(0, 6)}...${wallet.address.slice(
                       -4
                     )}`}
                     <button
                       onClick={() => copyToClipboard(wallet.address)}
-                      className="text-sm text-Brand/Brand-1 hover:text-Brand/Brand-2"
+                      className="text-sm text-[#7364DB] hover:text-Brand/Brand-2"
                     >
                       <CopyIcon />
                     </button>
                   </td>
-                  <td className="p-4 text-sm text-n-1 text-center">
+                  <td className="p-4 text-sm text-[#FFFFFF] text-center">
                     {balances[wallet.address]?.eth || "0"}
                   </td>
-                  <td className="p-4 text-sm text-n-1 text-center">
+                  <td className="p-4 text-sm text-[#FFFFFF] text-center">
                     {balances[wallet.address]?.weth || "0"}
                   </td>
-                  <td className="p-4 text-sm text-n-1 text-center">
+                  <td className="p-4 text-sm text-[#FFFFFF] text-center">
                     {balances[wallet.address]?.beth || "0"}
                   </td>
                   <td className="p-4 text-center">

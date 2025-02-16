@@ -8,9 +8,9 @@ const MarketplaceSection = ({
 }: IMarketplaceSection) => {
   return (
     <div>
-      <h2 className="font-medium mb-4">
+      <label htmlFor="marketplaces" className="block text-sm font-medium mb-2">
         Select Marketplace <span className="text-red-500">*</span>
-      </h2>
+      </label>
       <div className="flex flex-wrap gap-4">
         {["OpenSea", "Blur", "MagicEden"]
           .filter(
@@ -51,7 +51,7 @@ const MarketplaceSection = ({
                     ></div>
                   </div>
                 </button>
-                <p className="text-xs mt-0.5 text-n-3">
+                <p className="text-xs mt-0.5 text-[#9691A4]">
                   {(() => {
                     const price =
                       marketplace.toLowerCase() === "opensea" &&

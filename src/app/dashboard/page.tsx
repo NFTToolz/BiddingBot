@@ -176,6 +176,18 @@ const Tasks = () => {
               blur: false,
             },
           },
+          warningMessage: {
+            [task._id]: (bidStats?.warningMessage &&
+              bidStats.warningMessage[task._id]) || {
+              opensea: "",
+              magiceden: "",
+              blur: "",
+            },
+          },
+          rps: {
+            currentRPS: 0,
+            maxRPS: 0,
+          },
         },
       })
     );
@@ -328,7 +340,7 @@ const Tasks = () => {
           onClick={() => paginate(i)}
           className={`px-3 py-1 rounded ${
             currentPage === i
-              ? "bg-Brand/Brand-1 text-white"
+              ? "bg-[#7364DB] text-white"
               : "bg-gray-700 text-white"
           }`}
         >
@@ -418,7 +430,7 @@ const Tasks = () => {
   const exportButton = (
     <div className="relative inline-block">
       <button
-        className="dashboard-button !bg-n-13"
+        className="dashboard-button !bg-[#FFFFFF]3"
         onClick={() => setShowExportDropdown(!showExportDropdown)}
         disabled={selectedTasks.length === 0}
       >
@@ -428,7 +440,7 @@ const Tasks = () => {
         </div>
       </button>
       {showExportDropdown && (
-        <div className="absolute z-10 mt-1 border rounded-lg shadow-lg border-Neutral-BG-[night] bg-Neutral/Neutral-300-[night] max-h-60 overflow-y-auto custom-scrollbar whitespace-nowrap w-full min-w-[195px]">
+        <div className="absolute z-10 mt-1 border rounded-lg shadow-lg border-[#1F2128] bg-[#2C2C35] max-h-60 overflow-y-auto custom-scrollbar whitespace-nowrap w-full min-w-[195px]">
           <div
             onClick={exportAsJSON}
             className="cursor-pointer p-3 transition-colors hover:bg-Neutral/Neutral-400-[night]"
@@ -483,7 +495,7 @@ const Tasks = () => {
         onChange={handleImportTasks}
         className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
       />
-      <button className="dashboard-button !bg-n-13">
+      <button className="dashboard-button !bg-[#FFFFFF]3">
         <div className="flex items-center justify-between w-full gap-4">
           <span>Import Task</span>
           <UploadIcon />
@@ -572,7 +584,7 @@ const Tasks = () => {
                 onClick={() => {
                   sendMessage({ endpoint: "update" });
                 }}
-                className={`min-w-[166px] bg-Brand/Brand-1 px-6 py-3 rounded-md flex items-center gap-2 justify-center`}
+                className={`min-w-[166px] bg-[#7364DB] px-6 py-3 rounded-md flex items-center gap-2 justify-center`}
               >
                 <UpdateIcon width={24} height={24} />
                 <span className="text-white text-sm">Update</span>
@@ -582,7 +594,7 @@ const Tasks = () => {
                   sendMessage({ endpoint: "shutdown" });
                 }}
                 className={`min-w-[166px] ${
-                  isConnected ? "bg-red-500" : "bg-Brand/Brand-1"
+                  isConnected ? "bg-red-500" : "bg-[#7364DB]"
                 } px-6 py-3 rounded-md flex items-center gap-2 justify-center`}
               >
                 <PowerIcon width={24} height={24} />
@@ -608,12 +620,12 @@ const Tasks = () => {
           <div className="mb-4 flex justify-start gap-4">
             <Link
               href="/dashboard/wallet"
-              className="text-Brand/Brand-1 underline font-semibold"
+              className="text-[#7364DB] underline font-semibold"
             >
               Manage Wallet
             </Link>
             <button
-              className="text-Brand/Brand-1 underline font-semibold"
+              className="text-[#7364DB] underline font-semibold"
               onClick={() => setIsSettingsModalOpen(true)}
             >
               Settings

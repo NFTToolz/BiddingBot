@@ -105,7 +105,7 @@ const WalletActivities = () => {
           onClick={() => paginate(i)}
           className={`px-3 py-1 rounded ${
             currentPage === i
-              ? "bg-Brand/Brand-1 text-white"
+              ? "bg-[#7364DB] text-white"
               : "bg-gray-700 text-white"
           }`}
         >
@@ -121,16 +121,16 @@ const WalletActivities = () => {
   return (
     <div className="activity mt-7">
       <div className="holdings flex-1">
-        <div className="border rounded-2xl py-5 px-3 sm:px-6 bg-[#1f2129] border-Neutral/Neutral-Border-[night] h-full">
+        <div className="border rounded-2xl py-5 px-3 sm:px-6 bg-[#1f2129] border-[#313442] h-full">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 space-y-4 sm:space-y-0">
-            <h2 className="text-Neutral/Neutral-500-[day] font-semibold capitalize">
+            <h2 className="text-[#7E7E8F] font-semibold capitalize">
               {activeTab}
             </h2>
             <div className="flex space-x-2 w-full sm:w-auto">
               <button
                 className={`flex-1 sm:flex-none px-4 py-2 rounded ${
                   activeTab === "flips"
-                    ? "bg-Brand/Brand-1 text-white"
+                    ? "bg-[#7364DB] text-white"
                     : "bg-transparent text-white"
                 }`}
                 onClick={() => setActiveTab("flips")}
@@ -140,7 +140,7 @@ const WalletActivities = () => {
               <button
                 className={`flex-1 sm:flex-none px-4 py-2 rounded ${
                   activeTab === "activity"
-                    ? "bg-Brand/Brand-1 text-white"
+                    ? "bg-[#7364DB] text-white"
                     : "bg-transparent text-white"
                 }`}
                 onClick={() => setActiveTab("activity")}
@@ -212,10 +212,7 @@ const WalletActivities = () => {
               </thead>
               <tbody>
                 {currentRecords.map((record: Record) => (
-                  <tr
-                    key={record.id}
-                    className="border-b border-Neutral/Neutral-Border-[night]"
-                  >
+                  <tr key={record.id} className="border-b border-[#313442]">
                     {activeTab === "activity" ? (
                       <>
                         <td className="px-6 py-4">

@@ -10,7 +10,7 @@ const FilterInput: React.FC<{
         placeholder={placeholder}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full p-3 rounded-lg border border-n-5 bg-Neutral/Neutral-300-[night] text-n-3"
+        className="w-full p-3 rounded-lg border border-[#3F3A52] bg-[#2C2C35] text-[#9691A4]"
       />
     </div>
   );

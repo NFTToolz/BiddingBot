@@ -40,7 +40,7 @@ const SignIn = () => {
 
       <button
         onClick={handleLogin}
-        className="w-full bg-Brand/Brand-1 text-white p-4 rounded-md hover:bg-[#5C4DB5] mt-4 font-sans"
+        className="w-full bg-[#7364DB] text-white p-4 rounded-md hover:bg-[#5C4DB5] mt-4 font-sans"
       >
         Login
       </button>

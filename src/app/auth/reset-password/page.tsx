@@ -58,7 +58,7 @@ const Page = () => {
         <div className="mt-4">
           <label
             htmlFor="email"
-            className="block text-sm text-Neutral/Neutral-1100-[night] font-sans"
+            className="block text-sm text-[#F1F1F1] font-sans"
           >
             Email
           </label>
@@ -68,7 +68,7 @@ const Page = () => {
             id="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="mt-2 block w-full border rounded-lg shadow-sm p-4 border-Neutral-BG-[night] bg-Neutral/Neutral-300-[night]"
+            className="mt-2 block w-full border rounded-lg shadow-sm p-4 border-[#1F2128] bg-[#2C2C35]"
             required
           />
         </div>
@@ -79,7 +79,7 @@ const Page = () => {
         ) : (
           <button
             type="submit"
-            className="w-full bg-Brand/Brand-1 text-white p-4 rounded-md hover:bg-[#5C4DB5] mt-4 font-sans"
+            className="w-full bg-[#7364DB] text-white p-4 rounded-md hover:bg-[#5C4DB5] mt-4 font-sans"
           >
             Submit
           </button>

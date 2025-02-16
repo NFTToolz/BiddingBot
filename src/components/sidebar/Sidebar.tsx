@@ -65,7 +65,7 @@ const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
 
   return (
     <div
-      className={`pt-9 bg-Neutral-BG-[night] border top-[92px] left-0 pb-[300px] border-Neutral/Neutral-Border-[night] h-full fixed z-[99] transition-all duration-300 ${
+      className={`pt-9 bg-[#1F2128] border top-[92px] left-0 pb-[300px] border-[#313442] h-full fixed z-[99] transition-all duration-300 ${
         isCollapsed ? "w-[80px]" : "w-[300px]"
       } ${
         isMobile ? (showSideBar ? "translate-x-0" : "-translate-x-full") : ""
@@ -104,7 +104,7 @@ const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
                 isCollapsed ? "justify-center" : ""
               } ${
                 isActive
-                  ? "text-white bg-Brand/Brand-1 rounded-xl"
+                  ? "text-white bg-[#7364DB] rounded-xl"
                   : "text-[#AEB9E1]"
               }`}
             >

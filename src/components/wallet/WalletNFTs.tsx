@@ -62,7 +62,7 @@ const WalletNFTs = () => {
           onClick={() => paginate(i)}
           className={`px-3 py-1 rounded ${
             currentPage === i
-              ? "bg-Brand/Brand-1 text-white"
+              ? "bg-[#7364DB] text-white"
               : "bg-gray-700 text-white"
           }`}
         >
@@ -76,16 +76,14 @@ const WalletNFTs = () => {
   return (
     <div className="nft-assets mt-7">
       <div className="holdings flex-1">
-        <div className="border rounded-2xl py-5 px-3 sm:px-6 bg-[#1f2129] border-Neutral/Neutral-Border-[night] h-full">
+        <div className="border rounded-2xl py-5 px-3 sm:px-6 bg-[#1f2129] border-[#313442] h-full">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 space-y-4 sm:space-y-0">
-            <h2 className="text-Neutral/Neutral-500-[day] font-semibold">
-              NFT Assets
-            </h2>
+            <h2 className="text-[#7E7E8F] font-semibold">NFT Assets</h2>
             <div className="flex space-x-2 w-full sm:w-auto">
               <button
                 className={`flex-1 sm:flex-none px-4 py-2 rounded ${
                   activeTab === "listed"
-                    ? "bg-Brand/Brand-1 text-white"
+                    ? "bg-[#7364DB] text-white"
                     : "bg-transparent text-white"
                 }`}
                 onClick={() => setActiveTab("listed")}
@@ -95,7 +93,7 @@ const WalletNFTs = () => {
               <button
                 className={`flex-1 sm:flex-none px-4 py-2 rounded ${
                   activeTab === "unlisted"
-                    ? "bg-Brand/Brand-1 text-white"
+                    ? "bg-[#7364DB] text-white"
                     : "bg-transparent text-white"
                 }`}
                 onClick={() => setActiveTab("unlisted")}
@@ -124,10 +122,7 @@ const WalletNFTs = () => {
               </thead>
               <tbody>
                 {currentRecords.map((nft: NFTRecord) => (
-                  <tr
-                    key={nft.id}
-                    className="border-b border-Neutral/Neutral-Border-[night]"
-                  >
+                  <tr key={nft.id} className="border-b border-[#313442]">
                     <td className="px-6 py-4">{nft.name}</td>
                     <td className="px-6 py-4">{nft.collection}</td>
                     <td className="px-6 py-4">{nft.floorPrice} ETH</td>

@@ -112,7 +112,7 @@ const CustomSelect = ({
     <div className={`relative ${className}`}>
       <button
         type="button"
-        className="w-full min-w-20 border rounded-lg shadow-sm p-3 border-Neutral-BG-[night] bg-Neutral/Neutral-300-[night] text-left flex justify-between items-center hover:bg-Neutral/Neutral-400-[night] transition-colors"
+        className="w-full min-w-20 border rounded-lg shadow-sm p-3 border-[#1F2128] bg-[#2C2C35] text-left flex justify-between items-center hover:bg-Neutral/Neutral-400-[night] transition-colors"
         onClick={() => setIsOpen(!isOpen)}
       >
         {value ? (
@@ -125,11 +125,11 @@ const CustomSelect = ({
         <ChevronDown />
       </button>
       {isOpen && (
-        <ul className="absolute z-10 w-full mt-1 border rounded-lg shadow-lg border-Neutral-BG-[night] bg-Neutral/Neutral-300-[night]">
+        <ul className="absolute z-10 w-full mt-1 border rounded-lg shadow-lg border-[#1F2128] bg-[#2C2C35]">
           {enrichedOptions.map((option) => (
             <li
               key={option.value}
-              className="p-4 cursor-pointer transition-colors hover:bg-Brand/Brand-1 flex justify-between items-center"
+              className="p-4 cursor-pointer transition-colors hover:bg-[#7364DB] flex justify-between items-center"
               onClick={() => {
                 onChange(option.value);
                 setIsOpen(false);

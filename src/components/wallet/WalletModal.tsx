@@ -136,7 +136,7 @@ const WalletModal = ({ isOpen, onClose }: WalletModalProps) => {
       <div onClick={handleContentClick}>
         {step === 1 ? (
           <>
-            <h2 className="text-center text-xl font-bold my-4 text-Brand/Brand-1">
+            <h2 className="text-center text-xl font-bold my-4 text-[#7364DB]">
               {showImportInput
                 ? "IMPORT EXISTING WALLET"
                 : "CREATE A NEW WALLET"}
@@ -145,7 +145,7 @@ const WalletModal = ({ isOpen, onClose }: WalletModalProps) => {
               <div className="my-4 w-full">
                 <label
                   htmlFor="walletName"
-                  className="block text-sm text-Neutral/Neutral-1100-[night] font-sans"
+                  className="block text-sm text-[#F1F1F1] font-sans"
                 >
                   Wallet Name
                 </label>
@@ -155,7 +155,7 @@ const WalletModal = ({ isOpen, onClose }: WalletModalProps) => {
                   value={walletName}
                   onChange={(e) => setWalletName(e.target.value)}
                   placeholder={`Wallet 1`}
-                  className="mt-2 block w-full border rounded-lg shadow-sm p-4 border-Neutral-BG-[night] bg-Neutral/Neutral-300-[night]"
+                  className="mt-2 block w-full border rounded-lg shadow-sm p-4 border-[#1F2128] bg-[#2C2C35]"
                   required
                   autoComplete="off"
                 />
@@ -165,7 +165,7 @@ const WalletModal = ({ isOpen, onClose }: WalletModalProps) => {
                 <div className="mt-8 mb-4 w-full">
                   <label
                     htmlFor="walletName"
-                    className="block text-sm text-Neutral/Neutral-1100-[night] font-sans"
+                    className="block text-sm text-[#F1F1F1] font-sans"
                   >
                     Private Key / Seed Phrase
                   </label>
@@ -175,7 +175,7 @@ const WalletModal = ({ isOpen, onClose }: WalletModalProps) => {
                       value={importValue}
                       onChange={(e) => setImportValue(e.target.value)}
                       placeholder="Enter private key or seed phrase"
-                      className={`mt-2 block w-full border rounded-lg shadow-sm p-4 pr-10 border-Neutral-BG-[night] bg-Neutral/Neutral-300-[night] ${
+                      className={`mt-2 block w-full border rounded-lg shadow-sm p-4 pr-10 border-[#1F2128] bg-[#2C2C35] ${
                         !visible ? "text-security" : ""
                       }`}
                       autoComplete="off"
@@ -193,7 +193,7 @@ const WalletModal = ({ isOpen, onClose }: WalletModalProps) => {
 
               <div className="flex justify-end">
                 <p
-                  className="text-sm font-sans cursor-pointer text-Brand/Brand-1"
+                  className="text-sm font-sans cursor-pointer text-[#7364DB]"
                   onClick={() => setShowImportInput(!showImportInput)}
                 >
                   {showImportInput
@@ -205,7 +205,7 @@ const WalletModal = ({ isOpen, onClose }: WalletModalProps) => {
 
             <div className="flex justify-end mt-8">
               <button
-                className="px-12 rounded py-3 bg-Brand/Brand-1 text-white text-sm font-bold"
+                className="px-12 rounded py-3 bg-[#7364DB] text-white text-sm font-bold"
                 onClick={handleSubmit}
               >
                 {showImportInput ? "IMPORT" : "CREATE"}
@@ -214,7 +214,7 @@ const WalletModal = ({ isOpen, onClose }: WalletModalProps) => {
           </>
         ) : (
           <>
-            <h2 className="text-center text-xl font-bold my-4 text-Brand/Brand-1">
+            <h2 className="text-center text-xl font-bold my-4 text-[#7364DB]">
               Wallet Details
             </h2>
             <div className="flex flex-col space-y-4">
@@ -237,7 +237,7 @@ const WalletModal = ({ isOpen, onClose }: WalletModalProps) => {
                       );
                     }
                   }}
-                  className="text-sm text-Brand/Brand-1 mt-1"
+                  className="text-sm text-[#7364DB] mt-1"
                 >
                   <CopyIcon />
                 </button>
@@ -257,7 +257,7 @@ const WalletModal = ({ isOpen, onClose }: WalletModalProps) => {
                         );
                       }
                     }}
-                    className="text-sm text-Brand/Brand-1 mt-1"
+                    className="text-sm text-[#7364DB] mt-1"
                   >
                     <CopyIcon />
                   </button>
@@ -276,7 +276,7 @@ const WalletModal = ({ isOpen, onClose }: WalletModalProps) => {
               </div>
               <div className="flex justify-between">
                 <button
-                  className="px-12 rounded py-3 bg-Brand/Brand-1 text-white text-sm font-bold"
+                  className="px-12 rounded py-3 bg-[#7364DB] text-white text-sm font-bold"
                   onClick={() => setStep(1)}
                 >
                   Back

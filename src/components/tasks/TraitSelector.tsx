@@ -162,7 +162,7 @@ const TraitSelector: React.FC<TraitSelectorProps> = ({
       <div className="flex gap-2">
         <button
           type="button"
-          className="flex-1 border rounded-lg shadow-sm p-3 border-Neutral-BG-[night] bg-Neutral/Neutral-300-[night] text-left flex justify-between items-center hover:bg-Neutral/Neutral-400-[night] transition-colors"
+          className="flex-1 border rounded-lg shadow-sm p-3 border-[#1F2128] bg-[#2C2C35] text-left flex justify-between items-center hover:bg-Neutral/Neutral-400-[night] transition-colors"
           onClick={() => setIsOpen(!isOpen)}
         >
           <span>
@@ -176,7 +176,7 @@ const TraitSelector: React.FC<TraitSelectorProps> = ({
           <button
             type="button"
             onClick={handleSelectAll}
-            className="px-4 border rounded-lg shadow-sm border-Neutral-BG-[night] bg-Neutral/Neutral-300-[night] hover:bg-Neutral/Neutral-400-[night] transition-colors"
+            className="px-4 border rounded-lg shadow-sm border-[#1F2128] bg-[#2C2C35] hover:bg-Neutral/Neutral-400-[night] transition-colors"
           >
             Select All
           </button>
@@ -184,7 +184,7 @@ const TraitSelector: React.FC<TraitSelectorProps> = ({
             <button
               type="button"
               onClick={handleClearAll}
-              className="px-4 border rounded-lg shadow-sm border-Neutral-BG-[night] bg-Neutral/Neutral-300-[night] hover:bg-Neutral/Neutral-400-[night] transition-colors"
+              className="px-4 border rounded-lg shadow-sm border-[#1F2128] bg-[#2C2C35] hover:bg-Neutral/Neutral-400-[night] transition-colors"
             >
               Clear
             </button>
@@ -192,14 +192,14 @@ const TraitSelector: React.FC<TraitSelectorProps> = ({
         </>
       </div>
       {isOpen && (
-        <div className="absolute z-10 w-full mt-1 border rounded-lg shadow-lg border-Neutral-BG-[night] bg-Neutral/Neutral-300-[night] max-h-80 overflow-y-auto custom-scrollbar p-0.5">
-          <div className="sticky top-0 z-20 bg-Neutral/Neutral-300-[night]">
+        <div className="absolute z-10 w-full mt-1 border rounded-lg shadow-lg border-[#1F2128] bg-[#2C2C35] max-h-80 overflow-y-auto custom-scrollbar p-0.5">
+          <div className="sticky top-0 z-20 bg-[#2C2C35]">
             <input
               type="text"
               placeholder="Search traits..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="rounded w-full p-3 bg-n-7"
+              className="rounded w-full p-3 bg-[#15131D]"
             />
           </div>
 
@@ -214,7 +214,7 @@ const TraitSelector: React.FC<TraitSelectorProps> = ({
                 <div
                   onClick={() => toggleCategory(category)}
                   className={`cursor-pointer p-3 transition-colors my-2 hover:bg-Neutral/Neutral-400-[night] ${
-                    isCategorySelected(category) ? "bg-Brand/Brand-1" : ""
+                    isCategorySelected(category) ? "bg-[#7364DB]" : ""
                   }`}
                 >
                   <div className="flex items-center justify-between">
@@ -232,7 +232,7 @@ const TraitSelector: React.FC<TraitSelectorProps> = ({
                         <div
                           className={`w-5 h-5 border-2 rounded-sm flex items-center justify-center ${
                             areAllTraitsSelected(category)
-                              ? "bg-Brand/Brand-1 border-Brand/Brand-1"
+                              ? "bg-[#7364DB] border-[#7364DB]"
                               : "border-gray-400"
                           }`}
                           onClick={(e) => {
@@ -276,7 +276,7 @@ const TraitSelector: React.FC<TraitSelectorProps> = ({
                       <div
                         key={trait}
                         onClick={() => handleTraitToggle(category, trait)}
-                        className="cursor-pointer p-3 transition-colors my-2 hover:bg-Brand/Brand-1 flex items-center justify-between"
+                        className="cursor-pointer p-3 transition-colors my-2 hover:bg-[#7364DB] flex items-center justify-between"
                       >
                         <div className="flex items-center">
                           <div className="relative mr-2">
@@ -295,7 +295,7 @@ const TraitSelector: React.FC<TraitSelectorProps> = ({
                                 selectedTraits[category]?.some(
                                   (t) => t.name === trait
                                 )
-                                  ? "bg-Brand/Brand-1 border-Brand/Brand-1"
+                                  ? "bg-[#7364DB] border-[#7364DB]"
                                   : "border-gray-400"
                               }`}
                             >

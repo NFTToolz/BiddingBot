@@ -88,7 +88,7 @@ const OutbidSection = ({ formState, setFormState }: IOutbidSection) => {
                   }
                   value={formState.outbidOptions.openseaOutbidMargin?.toString()}
                   placeholder="0.0001"
-                  className={`w-full p-3 rounded-lg border border-Neutral-BG-[night] bg-Neutral/Neutral-300-[night] `}
+                  className={`w-full p-3 rounded-lg border border-[#1F2128] bg-[#2C2C35] `}
                   required
                   autoComplete="off"
                 />
@@ -136,7 +136,7 @@ const OutbidSection = ({ formState, setFormState }: IOutbidSection) => {
                   }}
                   value={formState.outbidOptions.blurOutbidMargin || ""}
                   placeholder="0.01"
-                  className={`w-full p-3 rounded-lg border border-Neutral-BG-[night] bg-Neutral/Neutral-300-[night] `}
+                  className={`w-full p-3 rounded-lg border border-[#1F2128] bg-[#2C2C35] `}
                   required
                   autoComplete="off"
                 />
@@ -170,7 +170,7 @@ const OutbidSection = ({ formState, setFormState }: IOutbidSection) => {
                   }
                   value={formState.outbidOptions.magicedenOutbidMargin?.toString()}
                   placeholder="0.0001"
-                  className={`w-full p-3 rounded-lg border border-Neutral-BG-[night] bg-Neutral/Neutral-300-[night] `}
+                  className={`w-full p-3 rounded-lg border border-[#1F2128] bg-[#2C2C35] `}
                   required
                   autoComplete="off"
                 />

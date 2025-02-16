@@ -17,13 +17,11 @@ const Card: React.FC<CardProps> = ({
   graph,
 }) => {
   return (
-    <div className="card p-6 border-Neutral/Neutral-Border-[night] border rounded-2xl w-full max-w-[290px] bg-[#1f2129] flex flex-col justify-between">
+    <div className="card p-6 border-[#313442] border rounded-2xl w-full max-w-[290px] bg-[#1f2129] flex flex-col justify-between">
       <div className="flex flex-col gap-4">
         <div className="flex items-center justify-between w-full">
-          <div className="icon p-3 bg-Neutral/Neutral-Border-[night] rounded-full">
-            {icon}
-          </div>
-          <h4 className="numbers text-Neutral/Neutral-1100-[night] font-bold font-poppins text-2xl">
+          <div className="icon p-3 bg-[#313442] rounded-full">{icon}</div>
+          <h4 className="numbers text-[#F1F1F1] font-bold font-poppins text-2xl">
             {amount}
           </h4>
         </div>
@@ -33,7 +31,7 @@ const Card: React.FC<CardProps> = ({
           </p>
           <p
             className={`numbers font-semibold font-poppins text-base ${
-              percentage > 0 ? "text-Accents/Green" : "text-Accents/Red"
+              percentage > 0 ? "text-Accents/Green" : "text-[#E23738]"
             }`}
           >
             {percentage}%
